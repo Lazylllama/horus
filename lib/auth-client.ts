@@ -6,6 +6,6 @@ import { createAuthClient } from "better-auth/react";
 import type { auth } from "./auth";
 
 export const authClient = createAuthClient({
-  baseURL: "http://localhost:3000",
+  baseURL: `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}` || "http://localhost:3000",
   plugins: [genericOAuthClient(), inferAdditionalFields<typeof auth>()],
 });
