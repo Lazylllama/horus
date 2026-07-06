@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { nephthysHosts } from "@/lib/nephthys";
 import { ThemeSwitcher } from "./theme-switcher";

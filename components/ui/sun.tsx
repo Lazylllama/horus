@@ -1,3 +1,5 @@
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: its fine */
+/** biome-ignore-all lint/a11y/noSvgWithoutTitle: its fine */
 "use client";
 
 import type { Variants } from "motion/react";

@@ -189,7 +189,8 @@ export default function Dashboard({
                 <h1
                   className={cn(
                     "text-4xl font-bold",
-                    6 > 2 ? "text-destructive" : "text-primary",
+                    // 6 > 2 ? "text-destructive" : "text-primary",
+                    "text-destructive",
                   )}
                 >
                   6d

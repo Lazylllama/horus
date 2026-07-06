@@ -1,3 +1,5 @@
+/** biome-ignore-all lint/a11y/noSvgWithoutTitle: its fine */
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: its fine */
 "use client";
 
 import type { Transition, Variants } from "motion/react";
