@@ -1,6 +1,7 @@
 "use client";
 
-import { LucideDoorOpen } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { createContext, useContext, useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { nephthysHosts } from "@/lib/nephthys";
 import { ThemeSwitcher } from "./theme-switcher";
@@ -16,9 +17,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { NativeSelect, NativeSelectOption } from "./ui/native-select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
-export default function Navbar() {
+export default function Navbar({ selectedHost }: { selectedHost: string }) {
+  const router = useRouter();
   const session = authClient.useSession();
 
   function handleLogin() {
@@ -31,66 +39,86 @@ export default function Navbar() {
     authClient.signOut();
   }
 
+  function handleHostChange(value: string | null) {
+    if (!value || !nephthysHosts.some((host) => host.host === value)) return;
+    const hostName = nephthysHosts.find((host) => host.host === value)?.name;
+    router.push(`/dashboard/${hostName}`);
+  }
+
   return (
-    <div className="flex items-center justify-between px-5 py-4 border-b">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <div className="size-2.5 bg-primary"></div>
-          <h1 className="text-lg font-semibold tracking-tight">nephthys</h1>
+    <div className="border-b">
+      <div className="flex items-center justify-between mx-auto px-10 py-4 max-w-6xl">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="size-2.5 bg-primary"></div>
+            <h1 className="text-lg font-semibold tracking-tight">nephthys</h1>
+          </div>
+          <Select
+            value={selectedHost}
+            onValueChange={(e) => handleHostChange(e as string)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select a channel">
+                {nephthysHosts.find((host) => host.host === selectedHost)?.name}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {nephthysHosts.map((host) => (
+                <SelectItem key={host.host} value={host.host}>
+                  {host.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <NativeSelect>
-          {nephthysHosts.map((host) => (
-            <NativeSelectOption key={host.name} value={host.host}>
-              {host.name}
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
-      </div>
-      <div className="flex items-center gap-2">
-        <ThemeSwitcher />
-        <Button size="icon-xl" variant="outline">
-          <CogIcon size={24} className="text-muted-foreground" />
-        </Button>
-        {session.data ? (
-          <Card className="flex items-center p-1">
-            <CardContent className="flex items-center gap-3 px-1">
-              <Avatar>
-                <AvatarImage
-                  className="rounded-xs"
-                  src={session.data.user.image || ""}
-                  alt={session.data.user.name}
-                />
-                <AvatarFallback>
-                  {session.data.user.name?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={
-                    <button type="button" className="text-left">
-                      <p className="font-extrabold">{session.data.user.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {session.data.user.slack_id}
-                      </p>
-                    </button>
-                  }
-                />
-                <DropdownMenuContent className="w-40" align="start">
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={handleSignOut}>
-                      Logout
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </CardContent>
-          </Card>
-        ) : (
-          <Button size="xl" className="text-md" onClick={handleLogin}>
-            Sign in →
+        <div className="flex items-center gap-2">
+          <ThemeSwitcher />
+          <Button size="icon-xl" variant="outline">
+            <CogIcon size={24} className="text-muted-foreground" />
           </Button>
-        )}
+          {session.data ? (
+            <Card className="flex items-center p-1">
+              <CardContent className="flex items-center gap-3 px-1">
+                <Avatar>
+                  <AvatarImage
+                    className="rounded-xs"
+                    src={session.data.user.image || ""}
+                    alt={session.data.user.name}
+                  />
+                  <AvatarFallback>
+                    {session.data.user.name?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={
+                      <button type="button" className="text-left">
+                        <p className="font-extrabold">
+                          {session.data.user.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {session.data.user.slack_id}
+                        </p>
+                      </button>
+                    }
+                  />
+                  <DropdownMenuContent className="w-40" align="start">
+                    <DropdownMenuGroup>
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={handleSignOut}>
+                        Logout
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </CardContent>
+            </Card>
+          ) : (
+            <Button size="xl" className="text-md" onClick={handleLogin}>
+              Sign in →
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

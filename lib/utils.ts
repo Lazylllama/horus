@@ -5,19 +5,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function greet(name: string) {
+export function greet(name: string | undefined | null): string {
   const currentTime = new Date();
   const currentHour = currentTime.getHours();
   let greeting: string;
 
   if (currentHour < 6) {
-    greeting = `Still up, ${name}`;
+    greeting = name ? `Still up, ${name}.` : "Still up?";
   } else if (currentHour < 12) {
-    greeting = `Morning, ${name}`;
+    greeting = name ? `Morning, ${name}.` : "Good morning";
   } else if (currentHour < 18) {
-    greeting = `Afternoon, ${name}`;
+    greeting = name ? `Afternoon, ${name}.` : "Good afternoon";
   } else {
-    greeting = `Evening, ${name}`;
+    greeting = name ? `Evening, ${name}.` : "Good evening";
   }
 
   return greeting;

@@ -70,10 +70,10 @@ export const nephthysHosts = [
     { name: "Stardance", host: "https://stardance.nephthys.hackclub.com" },
     { name: "Help", host: "https://help.nephthys.hackclub.com" },
     { name: "Nest", host: "https://nephthys.cyteon.dev" },
-    { name: "Identity Help", host: "https://identity.nephthys.hackclub.com" },
+    { name: "Identity-Help", host: "https://identity.nephthys.hackclub.com" },
     { name: "Beest", host: "https://beest.nephthys.hackclub.com" },
     { name: "Fallout", host: "https://fallout.nephthys.hackclub.com" },
-    { name: "HCTG", host: "https://hctg.nephthys.hackclub.com" },
+    // { name: "HCTG", host: "https://hctg.nephthys.hackclub.com" }, Borked?
 ];
 
 type FetchOptions = {
@@ -85,7 +85,7 @@ export async function fetchNephthys<T>(
     host: string | null,
     options: FetchOptions = {},
 ): Promise<T> {
-    if (!host || !Object.values(nephthysHosts).includes(host)) {
+    if (!host || !Object.values(nephthysHosts).some((h) => h.host.toLowerCase() === host)) {
         throw new Error(`Invalid Nephthys host: ${host}`);
     }
 
@@ -109,13 +109,19 @@ export function getStats(host: string | null) {
     return fetchNephthys<Stats>("/api/stats_v2", host, { revalidate: 30 });
 }
 
-export function getTickets(searchParams: URLSearchParams) {
+export async function getTickets(searchParams: URLSearchParams) {
     const params = new URLSearchParams(searchParams);
     if (!params.has("host")) {
         throw new Error("Missing required parameter: host");
     }
 
-    const host = params.get("host");
+    let host = params.get("host");
+
+    if (!host?.includes("https://")) {
+        host = nephthysHosts.find((h) => h.name.toLowerCase() === host?.toLowerCase())?.host || "";
+    }
+
+    console.log("Fetching tickets for host:", host);
 
     if (!params.has("status")) params.set("status", "open");
     if (
@@ -126,6 +132,22 @@ export function getTickets(searchParams: URLSearchParams) {
         !params.has("before")
     ) {
         params.set("since", daysAgoIsoDate(30));
+    }
+
+    if (params.get("status")?.includes(",")) {
+        const statuses = params.get("status")?.split(",") || [];
+
+        const results = await Promise.all(
+            statuses.map((status) => {
+                const statusParams = new URLSearchParams(params);
+                statusParams.set("status", status);
+                return fetchNephthys<TicketResponse | Ticket[]>(`/api/tickets?${statusParams}`, host, {
+                    revalidate: 30,
+                });
+            }),
+        );
+
+        return results.flatMap((result) => (Array.isArray(result) ? result : result.value));
     }
 
     return fetchNephthys<TicketResponse | Ticket[]>(`/api/tickets?${params}`, host, {
