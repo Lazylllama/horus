@@ -30,7 +30,9 @@ export function ThemeSwitcher() {
     >
       {theme === "light" && <SunIcon size={24} className="size-6" />}
       {theme === "dark" && <MoonIcon size={24} className="size-6" />}
-      {theme === "system" && <Laptop size={24} className="size-6" />}
+      {theme !== "light" && theme !== "dark" && (
+        <Laptop size={24} className="size-6" />
+      )}
       <span className="sr-only">Toggle theme</span>
     </Button>
   );
