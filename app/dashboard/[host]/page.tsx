@@ -32,7 +32,7 @@ export default function Dashboard({
   const { host: selectedHost } = use(params);
   const { data: session, isPending } = authClient.useSession();
   const [ticketsData, setTicketsData] = useState<TicketType[]>([]);
-  const [statsData, setStatsData] = useState<StatsType>();
+  const [statsData, setStatsData] = useState<CachetEnrichedStats>();
 
   useEffect(() => {
     async function fetchTickets() {
