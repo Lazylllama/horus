@@ -1,84 +1,43 @@
-export type NephthysUser = {
-  id: number;
-  slack_id: string;
-  username?: string | null;
-};
-
-export type Helper = {
-  id: number;
-  slack_id: string;
-  count: number;
-};
-
-export type Ticket = {
-  id: number;
-  title: string | null;
-  status: "OPEN" | "CLOSED" | "IN_PROGRESS" | string;
-  opened_by: NephthysUser | null;
-  closed_by: NephthysUser | null;
-  assigned_to: NephthysUser | null;
-  reopened_by: NephthysUser | null;
-  team_tags: string[];
-  created_at: string;
-  closed_at: string | null;
-  message_ts: string;
-};
-
-export type PeriodStats = {
-  new_tickets_total: number;
-  new_tickets_now_closed: number;
-  new_tickets_still_open: number;
-  new_tickets_in_progress: number;
-  closed_today: number;
-  closed_today_from_today: number;
-  assigned_today_in_progress: number;
-  helpers_leaderboard: Helper[];
-  mean_hang_time_minutes_unresolved: number | null;
-  mean_hang_time_minutes_all: number | null;
-  mean_resolution_time_minutes: number | null;
-};
-
-export type Stats = {
-  all_time: {
-    tickets_total: number;
-    tickets_open: number;
-    tickets_closed: number;
-    tickets_in_progress: number;
-    helpers_leaderboard: Helper[];
-    mean_hang_time_minutes_unresolved: number | null;
-    mean_hang_time_minutes_all: number | null;
-    mean_resolution_time_minutes: number | null;
-    oldest_unanswered_ticket: {
-      id: number;
-      created_at: string;
-      age_minutes: number;
-      link: string;
-    } | null;
-  };
-  past_24h: PeriodStats;
-  past_24h_previous: PeriodStats;
-  past_7d: PeriodStats;
-  past_7d_previous: PeriodStats;
-};
-
-export type TicketResponse = {
-  value: Ticket[];
-  Count: number;
-};
-
-export const nephthysHosts = [
-  { name: "Stardance", host: "https://stardance.nephthys.hackclub.com" },
-  { name: "Help", host: "https://help.nephthys.hackclub.com" },
-  { name: "Nest", host: "https://nephthys.cyteon.dev" },
-  { name: "Identity-Help", host: "https://identity.nephthys.hackclub.com" },
-  { name: "Beest", host: "https://beest.nephthys.hackclub.com" },
-  { name: "Fallout", host: "https://fallout.nephthys.hackclub.com" },
-  // { name: "HCTG", host: "https://hctg.nephthys.hackclub.com" }, Borked?
-];
+import type { Stats, Ticket, TicketResponse } from "@/types/nephthys";
+import { getCachetUser } from "./cachet";
 
 type FetchOptions = {
   revalidate?: number;
 };
+
+export const nephthysHosts = [
+  {
+    name: "Stardance",
+    host: "https://stardance.nephthys.hackclub.com",
+    channel: "C0AP0NMSP3P",
+  },
+  {
+    name: "Help",
+    host: "https://help.nephthys.hackclub.com",
+    channel: "C07TM4C0AQ5",
+  },
+  {
+    name: "Nest",
+    host: "https://nephthys.cyteon.dev",
+    channel: "C097AL5AUH0"
+  },
+  {
+    name: "Identity-Help",
+    host: "https://identity.nephthys.hackclub.com",
+    channel: "C092833JXKK",
+  },
+  {
+    name: "Beest",
+    host: "https://beest.nephthys.hackclub.com",
+    channel: "C0AQ4T1CWH2",
+  },
+  {
+    name: "Fallout",
+    host: "https://fallout.nephthys.hackclub.com",
+    channel: "C0ACJ290090",
+  },
+  // { name: "HCTG", host: "https://hctg.nephthys.hackclub.com" }, Borked?
+];
 
 export async function fetchNephthys<T>(
   path: string,
@@ -104,12 +63,35 @@ export async function fetchNephthys<T>(
   return response.json() as Promise<T>;
 }
 
-export function getStats(host: string | null) {
+export async function getStats(host: string | null, cachetEnrich = false) {
   if (!host) {
     throw new Error("Missing required parameter: host");
   }
 
-  return fetchNephthys<Stats>("/api/stats_v2", host, { revalidate: 30 });
+  if (!host?.includes("https://")) {
+    host =
+      nephthysHosts.find((h) => h.name.toLowerCase() === host?.toLowerCase())
+        ?.host || "";
+  }
+
+  if (!cachetEnrich) return fetchNephthys<Stats>("/api/stats_v2", host, { revalidate: 30 });
+
+  const rawStats = await fetchNephthys<Stats>("/api/stats_v2", host, { revalidate: 30 });
+
+  const enrichedStats = {
+    ...rawStats,
+    all_time: {
+      ...rawStats.all_time, helpers_leaderboard: await Promise.all(
+        rawStats.all_time.helpers_leaderboard.map(async (helper) => ({
+          ...helper,
+          imageUrl: (await getCachetUser(helper.slack_id))?.imageUrl,
+          displayName: (await getCachetUser(helper.slack_id))?.displayName,
+        }))
+      ),
+    }
+  };
+  console.log(enrichedStats)
+  return enrichedStats;
 }
 
 export async function getTickets(searchParams: URLSearchParams) {

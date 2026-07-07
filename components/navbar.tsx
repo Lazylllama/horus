@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { nephthysHosts } from "@/lib/nephthys";
+import { SiteBanner } from "./site-banner";
 import { ThemeSwitcher } from "./theme-switcher";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
@@ -46,6 +47,7 @@ export default function Navbar({ selectedHost }: { selectedHost: string }) {
 
   return (
     <div className="border-b">
+      <SiteBanner />
       <div className="flex items-center justify-between mx-auto px-10 py-4 max-w-6xl">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">

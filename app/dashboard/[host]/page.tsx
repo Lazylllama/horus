@@ -3,10 +3,10 @@
 import { ArrowUpRight } from "lucide-motion";
 import { useRouter } from "next/navigation";
 import { createContext, use, useEffect, useMemo, useState } from "react";
+import { HelperLeaderboardWidget } from "@/components/helper-leaderboard";
 import Navbar from "@/components/navbar";
 import { PageWrapper } from "@/components/page-template";
 import { PageDescription, PageHeader } from "@/components/text-types";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,10 +16,12 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
-import { nephthysHosts, type Ticket } from "@/lib/nephthys";
+import { nephthysHosts } from "@/lib/nephthys";
 import { cn, greet } from "@/lib/utils";
-
-export const NavbarContext = createContext(nephthysHosts[0].host);
+import type {
+  Stats as StatsType,
+  Ticket as TicketType,
+} from "@/types/nephthys";
 
 export default function Dashboard({
   params,
@@ -29,26 +31,47 @@ export default function Dashboard({
   const router = useRouter();
   const { host: selectedHost } = use(params);
   const { data: session, isPending } = authClient.useSession();
-  const [ticketsData, setTicketsData] = useState<Ticket[]>([]);
+  const [ticketsData, setTicketsData] = useState<TicketType[]>([]);
+  const [statsData, setStatsData] = useState<StatsType>();
 
   useEffect(() => {
     async function fetchTickets() {
       if (!selectedHost) return;
 
-      const openTicketsResponse = fetch(
+      const ticketsResponse = fetch(
         `/api/tickets?host=${selectedHost}&status=open,in_progress`,
       );
 
-      const ticketsData = await (await openTicketsResponse).json();
+      const ticketsResponseData = await (await ticketsResponse).json();
 
-      if (!Array.isArray(ticketsData.value) && !Array.isArray(ticketsData)) {
-        console.error("Invalid tickets data:", ticketsData.value);
+      if (
+        !Array.isArray(ticketsResponseData.value) &&
+        !Array.isArray(ticketsResponseData)
+      ) {
+        console.error("Invalid tickets data:", ticketsResponseData);
         return;
       }
 
-      setTicketsData(ticketsData.value || ticketsData);
+      setTicketsData(ticketsResponseData.value || ticketsResponseData);
     }
+
+    async function fetchStats() {
+      if (!selectedHost) return;
+
+      // TODO: Optional cachet enrichment to improve load speeds cause this shit takes fucking ages
+      const statsResponse = fetch(
+        `/api/stats?host=${selectedHost}&cachetEnriched=${true}`,
+      );
+
+      const statsResponseData = (await (
+        await statsResponse
+      ).json()) as StatsType;
+
+      setStatsData(statsResponseData);
+    }
+
     fetchTickets();
+    fetchStats();
   }, [selectedHost]);
 
   const userStats = useMemo(() => {
@@ -61,7 +84,6 @@ export default function Dashboard({
     if (isPending || !session?.user?.slack_id) return stats;
 
     for (const ticket of ticketsData) {
-      if (ticket.assigned_to) console.log(ticket.assigned_to);
       if (ticket.assigned_to?.slack_id === session.user.slack_id) {
         stats.assigned++;
       } else if (!ticket.assigned_to) {
@@ -79,8 +101,15 @@ export default function Dashboard({
       (h) => h.name.toLowerCase() === selectedHost.toLowerCase(),
     )
   ) {
-    console.log("Invalid host:", selectedHost);
+    console.error("Invalid host:", selectedHost);
     router.push("/");
+  }
+
+  function openSlackChannel(channelId: string) {
+    window.open(
+      `https://hackclub.enterprise.slack.com/archives/${channelId}`,
+      "_blank",
+    );
   }
 
   function switchHost() {
@@ -89,7 +118,7 @@ export default function Dashboard({
   }
 
   return (
-    <NavbarContext.Provider value={selectedHost}>
+    <>
       <Navbar selectedHost={selectedHost} />
       <PageWrapper variant="tight">
         <PageHeader
@@ -112,7 +141,17 @@ export default function Dashboard({
             <Button size="lg" variant="outline" onClick={switchHost}>
               SWITCH CHANNEL
             </Button>
-            <Button size="lg" variant="default">
+            <Button
+              size="lg"
+              variant="default"
+              onClick={() =>
+                openSlackChannel(
+                  nephthysHosts.find(
+                    (h) => h.name.toLowerCase() === selectedHost.toLowerCase(),
+                  )?.channel || "#",
+                )
+              }
+            >
               OPEN CHANNEL
               <ArrowUpRight size={16} />
             </Button>
@@ -143,8 +182,17 @@ export default function Dashboard({
           <Card className="">
             <CardContent className="flex flex-col items-left gap-2">
               <p className="text-xs">LEADERBOARD RANK</p>
-              <h1 className="text-4xl font-bold">#1</h1>
-              <p className="text-xs">of 67 helpers</p>
+              <h1 className="text-4xl font-bold">
+                #
+                {statsData
+                  ? statsData?.all_time.helpers_leaderboard.findIndex(
+                      (h: any) => h.slack_id === session?.user?.slack_id,
+                    ) + 1
+                  : "?"}
+              </h1>
+              <p className="text-xs">
+                of {statsData?.all_time.helpers_leaderboard.length} helpers
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -189,13 +237,27 @@ export default function Dashboard({
                 <h1
                   className={cn(
                     "text-4xl font-bold",
-                    // 6 > 2 ? "text-destructive" : "text-primary",
-                    "text-destructive",
+                    (statsData?.all_time.oldest_unanswered_ticket
+                      ?.age_minutes || 0) /
+                      60 /
+                      24 >
+                      6
+                      ? "text-destructive"
+                      : "text-primary",
                   )}
                 >
-                  6d
+                  {(
+                    (statsData?.all_time.oldest_unanswered_ticket
+                      ?.age_minutes || 0) /
+                    60 /
+                    24
+                  ).toFixed(1)}
+                  d
                 </h1>
-                <p className="text-muted-foreground">slow response · #420</p>
+                <p className="text-muted-foreground">
+                  slow response · #
+                  {statsData?.all_time.oldest_unanswered_ticket?.id}
+                </p>
                 <p className="text-lg">stardance isnt dancing</p>
               </CardContent>
               <CardAction className="w-full px-4">
@@ -219,83 +281,11 @@ export default function Dashboard({
               <h1 className="text-lg">Status breakdown</h1>
             </CardHeader>
           </Card>
-          <Card className="grid-cols-1">
-            <CardHeader>
-              <h1 className="text-lg">Helper leaderboard</h1>
-            </CardHeader>
-            <CardContent className="flex flex-col items-left gap-2">
-              <div className="flex flex-col gap-2 w-full">
-                <div className="flex flex-row items-center gap-2 w-full">
-                  <p className="text-muted-foreground">1</p>
-                  <Avatar>
-                    <AvatarImage
-                      className="rounded-sm"
-                      src="https://avatars.slack-edge.com/2026-06-01/11252913030068_6e0960f84c3ce8e76cae_512.png"
-                    />
-                    <AvatarFallback>SK</AvatarFallback>
-                  </Avatar>
-                  <div className="w-full">
-                    <p>Simon K</p>
-                    <div className="bg-muted w-full h-1">
-                      <div
-                        className="bg-primary h-1"
-                        style={{ width: `${(420 / 420) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="font-bold">420</p>
-                  </div>
-                </div>
-                <div className="flex flex-row items-center gap-2 w-full">
-                  <p className="text-muted-foreground">2</p>
-                  <Avatar>
-                    <AvatarImage
-                      className="rounded-sm"
-                      src="https://avatars.slack-edge.com/2025-12-09/10077925689238_2149e0ba18d7110e7a3f_512.png"
-                    />
-                    <AvatarFallback>C</AvatarFallback>
-                  </Avatar>
-                  <div className="w-full">
-                    <p>Carlson</p>
-                    <div className="bg-muted w-full h-1">
-                      <div
-                        className="bg-primary h-1"
-                        style={{ width: `${(280 / 420) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="font-bold">280</p>
-                  </div>
-                </div>
-                <div className="flex flex-row items-center gap-2 w-full">
-                  <p className="text-muted-foreground">3</p>
-                  <Avatar>
-                    <AvatarImage
-                      className="rounded-sm"
-                      src="https://avatars.slack-edge.com/2026-06-30/11478740980326_bfa75d4922a7c9ea5a91_512.png"
-                    />
-                    <AvatarFallback>C</AvatarFallback>
-                  </Avatar>
-                  <div className="w-full">
-                    <p>spj</p>
-                    <div className="bg-muted w-full h-1">
-                      <div
-                        className="bg-primary h-1"
-                        style={{ width: `${(135 / 420) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="font-bold">135</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <HelperLeaderboardWidget
+            helperData={statsData?.all_time?.helpers_leaderboard || []}
+          />
         </div>
       </PageWrapper>
-    </NavbarContext.Provider>
+    </>
   );
 }
