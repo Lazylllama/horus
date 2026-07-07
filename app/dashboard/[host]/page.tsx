@@ -2,7 +2,7 @@
 
 import { ArrowUpRight } from "lucide-motion";
 import { useRouter } from "next/navigation";
-import { createContext, use, useEffect, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import { HelperLeaderboardWidget } from "@/components/helper-leaderboard";
 import Navbar from "@/components/navbar";
 import { PageWrapper } from "@/components/page-template";
@@ -186,7 +186,7 @@ export default function Dashboard({
                 #
                 {statsData
                   ? statsData?.all_time.helpers_leaderboard.findIndex(
-                      (h: any) => h.slack_id === session?.user?.slack_id,
+                      (h) => h.slack_id === session?.user?.slack_id,
                     ) + 1
                   : "?"}
               </h1>

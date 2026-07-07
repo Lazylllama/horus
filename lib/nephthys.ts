@@ -19,7 +19,7 @@ export const nephthysHosts = [
   {
     name: "Nest",
     host: "https://nephthys.cyteon.dev",
-    channel: "C097AL5AUH0"
+    channel: "C097AL5AUH0",
   },
   {
     name: "Identity-Help",
@@ -74,23 +74,27 @@ export async function getStats(host: string | null, cachetEnrich = false) {
         ?.host || "";
   }
 
-  if (!cachetEnrich) return fetchNephthys<Stats>("/api/stats_v2", host, { revalidate: 30 });
+  if (!cachetEnrich)
+    return fetchNephthys<Stats>("/api/stats_v2", host, { revalidate: 30 });
 
-  const rawStats = await fetchNephthys<Stats>("/api/stats_v2", host, { revalidate: 30 });
+  const rawStats = await fetchNephthys<Stats>("/api/stats_v2", host, {
+    revalidate: 30,
+  });
 
   const enrichedStats = {
     ...rawStats,
     all_time: {
-      ...rawStats.all_time, helpers_leaderboard: await Promise.all(
+      ...rawStats.all_time,
+      helpers_leaderboard: await Promise.all(
         rawStats.all_time.helpers_leaderboard.map(async (helper) => ({
           ...helper,
           imageUrl: (await getCachetUser(helper.slack_id))?.imageUrl,
           displayName: (await getCachetUser(helper.slack_id))?.displayName,
-        }))
+        })),
       ),
-    }
+    },
   };
-  console.log(enrichedStats)
+  console.log(enrichedStats);
   return enrichedStats;
 }
 

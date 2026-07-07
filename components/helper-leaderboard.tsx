@@ -1,6 +1,6 @@
 "use client";
 
-import type { CachetEnrichedHelper, Helper } from "@/types/nephthys";
+import type { CachetEnrichedHelper } from "@/types/nephthys";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Card, CardContent, CardHeader } from "./ui/card";
 
@@ -23,7 +23,7 @@ export function HelperLeaderboardWidget({
           .sort((a, b) => b.count - a.count)
           .slice(0, maxHelperCount)
           .map((helper, index) => (
-            <div className="flex flex-col gap-2 w-full" key={index}>
+            <div className="flex flex-col gap-2 w-full" key={helper.slack_id}>
               <div className="flex flex-row items-center gap-2 w-full">
                 <p className="text-muted-foreground">{index + 1}</p>
                 <Avatar>
