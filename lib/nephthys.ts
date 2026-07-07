@@ -5,6 +5,7 @@ type FetchOptions = {
   revalidate?: number;
 };
 
+// TODO: Allow spaces or something
 export const nephthysHosts = [
   {
     name: "Stardance",
@@ -35,6 +36,11 @@ export const nephthysHosts = [
     name: "Fallout",
     host: "https://fallout.nephthys.hackclub.com",
     channel: "C0ACJ290090",
+  },
+  {
+    name: "HCAI",
+    host: "https://hcai-nephthys.nirvaan.hackclub.app/",
+    channel: "C0BDLT68ENN",
   },
   // { name: "HCTG", host: "https://hctg.nephthys.hackclub.com" }, Borked?
 ];
@@ -94,7 +100,7 @@ export async function getStats(host: string | null, cachetEnrich = false) {
       ),
     },
   };
-  console.log(enrichedStats);
+
   return enrichedStats;
 }
 
@@ -111,8 +117,6 @@ export async function getTickets(searchParams: URLSearchParams) {
       nephthysHosts.find((h) => h.name.toLowerCase() === host?.toLowerCase())
         ?.host || "";
   }
-
-  console.log("Fetching tickets for host:", host);
 
   if (!params.has("status")) params.set("status", "open");
   if (

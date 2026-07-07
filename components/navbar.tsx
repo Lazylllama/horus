@@ -3,12 +3,12 @@
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { nephthysHosts } from "@/lib/nephthys";
+import { SettingsModal } from "./settings-modal";
 import { SiteBanner } from "./site-banner";
 import { ThemeSwitcher } from "./theme-switcher";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
-import { CogIcon } from "./ui/cog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -74,9 +74,7 @@ export default function Navbar({ selectedHost }: { selectedHost: string }) {
         </div>
         <div className="flex items-center gap-2">
           <ThemeSwitcher />
-          <Button size="icon-xl" variant="outline">
-            <CogIcon size={24} className="text-muted-foreground" />
-          </Button>
+          <SettingsModal />
           {session.data ? (
             <Card className="flex items-center p-1">
               <CardContent className="flex items-center gap-3 px-1">

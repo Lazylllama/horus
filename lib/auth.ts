@@ -66,15 +66,7 @@ export const auth = betterAuth({
             }
 
             const cachetData = await cachetResponse.json();
-            console.log("user data:", {
-              id: userInfo.id,
-              email: userInfo.primary_email,
-              emailVerified: true,
-              name:
-                cachetData.displayName || userInfo.primary_email.split("@")[0],
-              slack_id: userInfo.slack_id,
-              image: cachetData.imageUrl,
-            });
+
             return {
               id: userInfo.id,
               email: userInfo.primary_email,

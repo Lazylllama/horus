@@ -21,11 +21,9 @@ export default function Home() {
   }
 
   function handleSelectHost() {
-    console.log("Selected host:", selectedHost);
     const hostName = nephthysHosts.find(
       (host) => host.host === selectedHost,
     )?.name;
-    console.log("Host name:", hostName);
     router.push(`/dashboard/${hostName}`);
   }
 

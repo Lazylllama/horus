@@ -1,13 +1,17 @@
 "use client";
 
 import { ArrowUpRight } from "lucide-motion";
+import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useMemo, useState } from "react";
 import { HelperLeaderboardWidget } from "@/components/helper-leaderboard";
 import Navbar from "@/components/navbar";
 import { PageWrapper } from "@/components/page-template";
 import { PageDescription, PageHeader } from "@/components/text-types";
-import { Badge } from "@/components/ui/badge";
+import {
+  AssignedTicketsWidget,
+  UnassignedTicketsWidget,
+} from "@/components/ticket-table";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,7 +21,7 @@ import {
 } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
 import { nephthysHosts } from "@/lib/nephthys";
-import { cn, greet } from "@/lib/utils";
+import { caughtUpText, cn, greet, SlackChannelLink } from "@/lib/utils";
 import type {
   CachetEnrichedStats,
   Ticket as TicketType,
@@ -31,6 +35,7 @@ export default function Dashboard({
   const router = useRouter();
   const { host: selectedHost } = use(params);
   const { data: session, isPending } = authClient.useSession();
+  const [checkUpTicket, _setCheckUpTicket] = useState<TicketType | null>(null);
   const [ticketsData, setTicketsData] = useState<TicketType[]>([]);
   const [statsData, setStatsData] = useState<CachetEnrichedStats>();
 
@@ -42,17 +47,16 @@ export default function Dashboard({
         `/api/tickets?host=${selectedHost}&status=open,in_progress`,
       );
 
-      const ticketsResponseData = await (await ticketsResponse).json();
+      const ticketsResponseData = (await (
+        await ticketsResponse
+      ).json()) as TicketType[];
 
-      if (
-        !Array.isArray(ticketsResponseData.value) &&
-        !Array.isArray(ticketsResponseData)
-      ) {
+      if (!Array.isArray(ticketsResponseData)) {
         console.error("Invalid tickets data:", ticketsResponseData);
         return;
       }
 
-      setTicketsData(ticketsResponseData.value || ticketsResponseData);
+      setTicketsData(ticketsResponseData);
     }
 
     async function fetchStats() {
@@ -106,10 +110,7 @@ export default function Dashboard({
   }
 
   function openSlackChannel(channelId: string) {
-    window.open(
-      `https://hackclub.enterprise.slack.com/archives/${channelId}`,
-      "_blank",
-    );
+    window.open(SlackChannelLink(channelId), "_blank");
   }
 
   function switchHost() {
@@ -157,116 +158,156 @@ export default function Dashboard({
             </Button>
           </div>
         </PageHeader>
-        <div className="grid lg:grid-cols-4 md:grid-cols-3 grid-cols-2 gap-4 py-2 px-6">
-          <Card className="">
-            <CardContent className="flex flex-col items-left gap-2">
-              <p className="text-xs">LEADERBOARD RANK</p>
-              <h1 className="text-4xl font-bold">#1</h1>
-              <p className="text-xs">of 67 helpers</p>
-            </CardContent>
+        <div className="grid md:grid-cols-3 grid-cols-2 gap-4 py-2 px-6 min-h-62">
+          <Card>
+            <CardHeader>
+              <h1 className="text-lg">Oldest unanswered</h1>
+            </CardHeader>
+            {statsData?.all_time.oldest_unanswered_ticket?.id ? (
+              <>
+                <CardContent className="flex flex-col items-left gap-2">
+                  <h1
+                    className={cn(
+                      "text-4xl font-bold",
+                      (statsData?.all_time.oldest_unanswered_ticket
+                        ?.age_minutes || 0) /
+                        60 /
+                        24 >
+                        6
+                        ? "text-destructive"
+                        : "text-primary",
+                    )}
+                  >
+                    {(
+                      (statsData?.all_time.oldest_unanswered_ticket
+                        ?.age_minutes || 0) /
+                      60 /
+                      24
+                    ).toFixed(1)}
+                    d
+                  </h1>
+                  <p className="text-muted-foreground">
+                    slow response · #
+                    {statsData?.all_time.oldest_unanswered_ticket?.id}
+                  </p>
+                  <p className="text-lg">
+                    {
+                      ticketsData.find(
+                        (t) =>
+                          t.id ===
+                          statsData?.all_time.oldest_unanswered_ticket?.id,
+                      )?.title
+                    }
+                  </p>
+                </CardContent>
+                <CardAction className="w-full px-4">
+                  <Button className="w-full text-md" size="lg">
+                    VIEW TICKET
+                    <ArrowUpRight size={16} />
+                  </Button>
+                </CardAction>
+              </>
+            ) : (
+              <CardContent className="flex flex-col items-center gap-4 justify-center my-auto">
+                <div className="rounded-full bg-primary text-primary-foreground size-12 flex items-center justify-center">
+                  <Check size={38} className="" />
+                </div>
+                <h1 className="font-medium text-card-foreground text-lg">
+                  {caughtUpText()}
+                </h1>
+              </CardContent>
+            )}
           </Card>
-          <Card className="">
-            <CardContent className="flex flex-col items-left gap-2">
-              <p className="text-xs">LEADERBOARD RANK</p>
-              <h1 className="text-4xl font-bold">#1</h1>
-              <p className="text-xs">of 67 helpers</p>
-            </CardContent>
+          <Card>
+            <CardHeader>
+              <h1 className="text-lg">Ticket check up</h1>
+            </CardHeader>
+            {checkUpTicket ? (
+              <>
+                <CardContent className="flex flex-col items-left gap-2">
+                  <h1
+                    className={cn(
+                      "text-4xl font-bold",
+                      (statsData?.all_time.oldest_unanswered_ticket
+                        ?.age_minutes || 0) /
+                        60 /
+                        24 >
+                        6
+                        ? "text-destructive"
+                        : "text-primary",
+                    )}
+                  >
+                    {(
+                      (statsData?.all_time.oldest_unanswered_ticket
+                        ?.age_minutes || 0) /
+                      60 /
+                      24
+                    ).toFixed(1)}
+                    d
+                  </h1>
+                  <p className="text-muted-foreground">
+                    slow response · #
+                    {statsData?.all_time.oldest_unanswered_ticket?.id}
+                  </p>
+                  <p className="text-lg">stardance isnt dancing</p>
+                </CardContent>
+                <CardAction className="w-full px-4">
+                  <Button className="w-full text-md" size="lg">
+                    VIEW TICKET
+                    <ArrowUpRight size={16} />
+                  </Button>
+                </CardAction>
+              </>
+            ) : (
+              <CardContent className="flex flex-col items-center gap-4 justify-center my-auto">
+                <div className="rounded-full bg-primary text-primary-foreground size-12 flex items-center justify-center">
+                  <Check size={38} className="" />
+                </div>
+                <h1 className="font-medium text-card-foreground text-lg">
+                  {caughtUpText()}
+                </h1>
+              </CardContent>
+            )}
           </Card>
-          <Card className="">
+          <Card>
+            <CardHeader>
+              <h1 className="text-lg">Enjoying what your seeing? (or not)</h1>
+            </CardHeader>
             <CardContent className="flex flex-col items-left gap-2">
-              <p className="text-xs">LEADERBOARD RANK</p>
-              <h1 className="text-4xl font-bold">#1</h1>
-              <p className="text-xs">of 67 helpers</p>
-            </CardContent>
-          </Card>
-          <Card className="">
-            <CardContent className="flex flex-col items-left gap-2">
-              <p className="text-xs">LEADERBOARD RANK</p>
-              <h1 className="text-4xl font-bold">
-                #
-                {statsData
-                  ? statsData?.all_time.helpers_leaderboard.findIndex(
-                      (h) => h.slack_id === session?.user?.slack_id,
-                    ) + 1
-                  : "?"}
+              <h1 className={cn("text-lg font-bold")}>
+                {`I'd <3 to hear from you either way!`}
               </h1>
-              <p className="text-xs">
-                of {statsData?.all_time.helpers_leaderboard.length} helpers
-              </p>
             </CardContent>
+            <CardAction className="w-full px-4">
+              <Button className="w-full text-md feedback-button" size="lg">
+                FEEDBACK
+                <ArrowUpRight size={16} />
+              </Button>
+            </CardAction>
           </Card>
         </div>
 
         <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-4 py-2 px-6">
-          <div className="col-span-2 flex flex-col gap-4">
+          <div className="col-span-3 flex flex-col gap-4">
             {session?.user && (
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <h1 className="text-lg">Assigned to you</h1>
-                    <p className="text-muted-foreground font-sans">
-                      Something here
-                    </p>
-                  </div>
-                  <Badge variant="default">{userStats.assigned} Tickets</Badge>
-                </CardHeader>
-              </Card>
+              <AssignedTicketsWidget
+                slackId={session.user.slack_id}
+                tickets={ticketsData}
+                slackChannel={
+                  nephthysHosts.find(
+                    (h) => h.name.toLowerCase() === selectedHost.toLowerCase(),
+                  )?.channel || "#"
+                }
+              />
             )}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <h1 className="text-lg">Unassigned queue</h1>
-                  <p className="text-muted-foreground font-sans">
-                    Something here
-                  </p>
-                </div>
-                <Badge
-                  variant={userStats.unclaimed > 30 ? "destructive" : "default"}
-                >
-                  {userStats.unclaimed} Tickets
-                </Badge>
-              </CardHeader>
-            </Card>
-          </div>
-          <div className="col-span-1">
-            <Card>
-              <CardHeader>
-                <h1 className="text-lg">Oldest unanswered</h1>
-              </CardHeader>
-              <CardContent className="flex flex-col items-left gap-2">
-                <h1
-                  className={cn(
-                    "text-4xl font-bold",
-                    (statsData?.all_time.oldest_unanswered_ticket
-                      ?.age_minutes || 0) /
-                      60 /
-                      24 >
-                      6
-                      ? "text-destructive"
-                      : "text-primary",
-                  )}
-                >
-                  {(
-                    (statsData?.all_time.oldest_unanswered_ticket
-                      ?.age_minutes || 0) /
-                    60 /
-                    24
-                  ).toFixed(1)}
-                  d
-                </h1>
-                <p className="text-muted-foreground">
-                  slow response · #
-                  {statsData?.all_time.oldest_unanswered_ticket?.id}
-                </p>
-                <p className="text-lg">stardance isnt dancing</p>
-              </CardContent>
-              <CardAction className="w-full px-4">
-                <Button className="w-full text-md" size="lg">
-                  VIEW TICKET
-                  <ArrowUpRight size={16} />
-                </Button>
-              </CardAction>
-            </Card>
+            <UnassignedTicketsWidget
+              tickets={ticketsData}
+              slackChannel={
+                nephthysHosts.find(
+                  (h) => h.name.toLowerCase() === selectedHost.toLowerCase(),
+                )?.channel || "#"
+              }
+            />
           </div>
         </div>
 

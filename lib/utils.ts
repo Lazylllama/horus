@@ -22,3 +22,50 @@ export function greet(name: string | undefined | null): string {
 
   return greeting;
 }
+
+const CaughtUpTexts = [
+  "You're all caught up!",
+  "Keep it up!",
+  "Nothing new yet!",
+];
+
+export function caughtUpText() {
+  const randomIndex = Math.floor(Math.random() * CaughtUpTexts.length);
+  return CaughtUpTexts[randomIndex];
+}
+
+const minute = 60,
+  hour = minute * 60,
+  day = hour * 24;
+
+export function relativeTime(delta: number) {
+  let since: string;
+
+  if (delta < 30) {
+    since = "just then.";
+  } else if (delta < minute) {
+    since = `${delta} seconds ago.`;
+  } else if (delta < 2 * minute) {
+    since = "a minute ago.";
+  } else if (delta < hour) {
+    since = `${Math.floor(delta / minute)} minutes ago.`;
+  } else if (Math.floor(delta / hour) === 1) {
+    since = "1 hour ago.";
+  } else if (delta < day) {
+    since = `${Math.floor(delta / hour)} hours ago.`;
+  } else if (delta < day * 2) {
+    since = "yesterday";
+  } else {
+    since = `${Math.floor(delta / day)} days ago.`;
+  }
+
+  return since;
+}
+
+export function SlackChannelLink(channelId: string) {
+  return `https://hackclub.enterprise.slack.com/archives/${channelId}`;
+}
+
+export function SlackMessageLink(channelId: string, messageTs: string) {
+  return `${SlackChannelLink(channelId)}/p${messageTs.replace(".", "")}`;
+}
