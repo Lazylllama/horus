@@ -19,7 +19,7 @@ import { authClient } from "@/lib/auth-client";
 import { nephthysHosts } from "@/lib/nephthys";
 import { cn, greet } from "@/lib/utils";
 import type {
-  Stats as StatsType,
+  CachetEnrichedStats,
   Ticket as TicketType,
 } from "@/types/nephthys";
 
@@ -65,7 +65,7 @@ export default function Dashboard({
 
       const statsResponseData = (await (
         await statsResponse
-      ).json()) as StatsType;
+      ).json()) as CachetEnrichedStats;
 
       setStatsData(statsResponseData);
     }
