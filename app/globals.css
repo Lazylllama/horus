@@ -119,6 +119,10 @@
   --sidebar-ring: oklch(0.56 0.021 213.5);
 }
 
+.ln-shadcn {
+  --ln-bg-row-alternate: var(--card-selected) !important
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -54,7 +54,7 @@ export function relativeTime(delta: number) {
   } else if (delta < day) {
     since = `${Math.floor(delta / hour)} hours ago.`;
   } else if (delta < day * 2) {
-    since = "yesterday";
+    since = "yesterday.";
   } else {
     since = `${Math.floor(delta / day)} days ago.`;
   }

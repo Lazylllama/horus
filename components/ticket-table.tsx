@@ -3,13 +3,20 @@ import {
   useClientDataSource,
 } from "@1771technologies/lytenyte-core";
 import type { CellRendererParams } from "@1771technologies/lytenyte-core/types";
+import { MailWarning } from "lucide-react";
 import { LyteNyte } from "@/components/lytenyte-core";
-import { relativeTime, SlackMessageLink } from "@/lib/utils";
+import { cn, relativeTime, SlackMessageLink } from "@/lib/utils";
 import type { Ticket } from "@/types/nephthys";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Card, CardContent, CardHeader } from "./ui/card";
 
 type Spec = Grid.GridSpec<Ticket>;
+
+const minute = 60,
+  hour = minute * 60,
+  day = hour * 24,
+  week = day * 7;
 
 function TicketTable({
   tickets,
@@ -27,7 +34,7 @@ function TicketTable({
     {
       id: "title",
       name: "Title",
-      width: 400,
+      width: 420,
       cellRenderer: ({ api, row }) => {
         if (!api.rowIsLeaf(row) || !row.data) return;
         return (
@@ -45,10 +52,15 @@ function TicketTable({
     {
       id: "status",
       name: "Status",
-      width: 100,
+      width: 125,
       cellRenderer: StatusCellRenderer,
     },
-    { id: "opened_by", name: "Opened By", cellRenderer: UserCellRenderer },
+    {
+      id: "opened_by",
+      name: "Opened By",
+      width: 250,
+      cellRenderer: UserCellRenderer,
+    },
     {
       id: "created_at",
       name: "Created",
@@ -152,7 +164,19 @@ function StatusCellRenderer({ api, row }: CellRendererParams<Spec>) {
 function UserCellRenderer({ api, row }: CellRendererParams<Spec>) {
   if (!api.rowIsLeaf(row) || !row.data) return;
 
-  return <span>{row.data.opened_by?.username}</span>;
+  return (
+    <span className="flex flex-row justify-center items-center gap-2">
+      <Avatar size={"sm"}>
+        <AvatarImage
+          src={`https://cachet.hackclub.com/users/${row.data.opened_by?.slack_id}/r`}
+        />
+        <AvatarFallback>
+          {row.data.opened_by?.username?.charAt(0)}
+        </AvatarFallback>
+      </Avatar>
+      {row.data.opened_by?.username}
+    </span>
+  );
 }
 
 function DateCellRenderer({ api, row }: CellRendererParams<Spec>) {
@@ -161,5 +185,20 @@ function DateCellRenderer({ api, row }: CellRendererParams<Spec>) {
   const date = new Date(row.data.created_at);
   const delta = Math.round((Date.now() - +date) / 1000);
   const since = relativeTime(delta);
-  return <span>{since}</span>;
+
+  return (
+    <span
+      className={cn(
+        delta < 2 * day
+          ? "text-primary"
+          : delta > week
+            ? "text-destructive"
+            : "text-orange-400",
+        "flex flex-row justify-center items-center gap-1",
+      )}
+    >
+      {delta > week && <MailWarning size={16} className="text-destructive" />}
+      {since}
+    </span>
+  );
 }

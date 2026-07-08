@@ -4,6 +4,7 @@ import { ArrowUpRight } from "lucide-motion";
 import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useMemo, useState } from "react";
+import { Footer } from "@/components/footer";
 import { HelperLeaderboardWidget } from "@/components/helper-leaderboard";
 import Navbar from "@/components/navbar";
 import { PageWrapper } from "@/components/page-template";
@@ -158,7 +159,7 @@ export default function Dashboard({
             </Button>
           </div>
         </PageHeader>
-        <div className="grid md:grid-cols-3 grid-cols-2 gap-4 py-2 px-6 min-h-62">
+        <div className="grid md:grid-cols-3 grid-cols-2 gap-4 py-2 px-6 min-h-66">
           <Card>
             <CardHeader>
               <h1 className="text-lg">Oldest unanswered</h1>
@@ -251,7 +252,7 @@ export default function Dashboard({
                   </p>
                   <p className="text-lg">stardance isnt dancing</p>
                 </CardContent>
-                <CardAction className="w-full px-4">
+                <CardAction className="w-full px-4 mt-auto">
                   <Button className="w-full text-md" size="lg">
                     VIEW TICKET
                     <ArrowUpRight size={16} />
@@ -271,14 +272,22 @@ export default function Dashboard({
           </Card>
           <Card>
             <CardHeader>
-              <h1 className="text-lg">Enjoying what your seeing? (or not)</h1>
+              <h1 className="text-lg">
+                Enjoying what your seeing? <em>(or not)</em>
+              </h1>
             </CardHeader>
             <CardContent className="flex flex-col items-left gap-2">
               <h1 className={cn("text-lg font-bold")}>
-                {`I'd <3 to hear from you either way!`}
+                I'd
+                <span className="text-primary">{" <3 "}</span>
+                to hear from you either way!
               </h1>
+              <p className="text-muted-foreground text-md">
+                Your feedback is greatly appreciated and makes it easier for me
+                to prioritize!
+              </p>
             </CardContent>
-            <CardAction className="w-full px-4">
+            <CardAction className="w-full px-4 mt-auto">
               <Button className="w-full text-md feedback-button" size="lg">
                 FEEDBACK
                 <ArrowUpRight size={16} />
@@ -327,6 +336,7 @@ export default function Dashboard({
           />
         </div>
       </PageWrapper>
+      <Footer />
     </>
   );
 }

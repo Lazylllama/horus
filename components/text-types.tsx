@@ -23,16 +23,19 @@ export function PageDescription({ children }: { children: React.ReactNode }) {
 export function LinkHref({
   href,
   children,
+  ...props
 }: {
   href: string;
   children: React.ReactNode;
-}) {
+} & React.AnchorHTMLAttributes<HTMLAnchorElement>) {
+  const { className, ...restProps } = props;
   return (
     <a
       href={href}
       target="_blank"
-      className="text-primary underline"
+      className={`text-primary underline ${className || ""}`}
       rel="noopener noreferrer"
+      {...restProps}
     >
       {children}
     </a>

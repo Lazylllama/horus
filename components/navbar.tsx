@@ -46,7 +46,7 @@ export default function Navbar({ selectedHost }: { selectedHost: string }) {
   }
 
   return (
-    <div className="border-b">
+    <div className="border-b bg-card">
       <SiteBanner />
       <div className="flex items-center justify-between mx-auto px-10 py-4 max-w-6xl">
         <div className="flex items-center gap-4">

@@ -34,12 +34,12 @@ export function SettingsModal() {
           <DialogTitle>Preferences</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
           <SettingsHeader
             title="Data Collection"
             description="I use Posthog to collect data so I can improve this faster, you can of course opt-out here if you wish! <3"
           />
-          <Button onClick={() => TogglePosthogCollection()}>
+          <Button className={"mt-2"} onClick={() => TogglePosthogCollection()}>
             {posthog.has_opted_in_capturing() ? "Opt Out" : "Opt In"}
           </Button>
         </div>
