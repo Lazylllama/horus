@@ -3,12 +3,13 @@ import {
   useClientDataSource,
 } from "@1771technologies/lytenyte-core";
 import type { CellRendererParams } from "@1771technologies/lytenyte-core/types";
-import { MailWarning } from "lucide-react";
+import { ArrowUpRight, MailWarning } from "lucide-react";
 import { LyteNyte } from "@/components/lytenyte-core";
 import { cn, relativeTime, SlackMessageLink } from "@/lib/utils";
 import type { Ticket } from "@/types/nephthys";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader } from "./ui/card";
 
 type Spec = Grid.GridSpec<Ticket>;
@@ -17,6 +18,16 @@ const minute = 60,
   hour = minute * 60,
   day = hour * 24,
   week = day * 7;
+
+function OpenRandomTicket(tickets: Ticket[], slackChannel: string) {
+  const randomIndex = Math.floor(Math.random() * tickets.length);
+  const ticketLink = SlackMessageLink(
+    slackChannel,
+    tickets[randomIndex].message_ts,
+  );
+
+  window.open(ticketLink, "_blank");
+}
 
 function TicketTable({
   tickets,
@@ -108,12 +119,20 @@ export function UnassignedTicketsWidget({
   slackChannel: string;
 }) {
   const unassignedTickets = tickets.filter((ticket) => !ticket.assigned_to);
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <h1 className="text-lg">Unassigned queue</h1>
-          <p className="text-muted-foreground font-sans">Something here</p>
+          <Button
+            className={"mt-2"}
+            onClick={() => OpenRandomTicket(unassignedTickets, slackChannel)}
+            variant={"outline"}
+          >
+            Open random
+            <ArrowUpRight />
+          </Button>
         </div>
         <Badge
           variant={unassignedTickets.length > 50 ? "destructive" : "default"}
