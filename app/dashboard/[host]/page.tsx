@@ -8,11 +8,13 @@ import { Footer } from "@/components/footer";
 import { HelperLeaderboardWidget } from "@/components/helper-leaderboard";
 import Navbar from "@/components/navbar";
 import { PageWrapper } from "@/components/page-template";
+import { SurveyWidget } from "@/components/survey-widget";
 import { PageDescription, PageHeader } from "@/components/text-types";
 import {
   AssignedTicketsWidget,
   UnassignedTicketsWidget,
 } from "@/components/ticket-table";
+import { TicketWidget } from "@/components/ticket-widget";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -160,140 +162,30 @@ export default function Dashboard({
           </div>
         </PageHeader>
         <div className="grid md:grid-cols-3 grid-cols-2 gap-4 py-2 px-6 min-h-66">
-          <Card>
-            <CardHeader>
-              <h1 className="text-lg">Oldest unanswered</h1>
-            </CardHeader>
-            {statsData?.all_time.oldest_unanswered_ticket?.id ? (
-              <>
-                <CardContent className="flex flex-col items-left gap-2">
-                  <h1
-                    className={cn(
-                      "text-4xl font-bold",
-                      (statsData?.all_time.oldest_unanswered_ticket
-                        ?.age_minutes || 0) /
-                        60 /
-                        24 >
-                        6
-                        ? "text-destructive"
-                        : "text-primary",
-                    )}
-                  >
-                    {(
-                      (statsData?.all_time.oldest_unanswered_ticket
-                        ?.age_minutes || 0) /
-                      60 /
-                      24
-                    ).toFixed(1)}
-                    d
-                  </h1>
-                  <p className="text-muted-foreground">
-                    slow response · #
-                    {statsData?.all_time.oldest_unanswered_ticket?.id}
-                  </p>
-                  <p className="text-lg">
-                    {
-                      ticketsData.find(
-                        (t) =>
-                          t.id ===
-                          statsData?.all_time.oldest_unanswered_ticket?.id,
-                      )?.title
-                    }
-                  </p>
-                </CardContent>
-                <CardAction className="w-full px-4">
-                  <Button className="w-full text-md" size="lg">
-                    VIEW TICKET
-                    <ArrowUpRight size={16} />
-                  </Button>
-                </CardAction>
-              </>
-            ) : (
-              <CardContent className="flex flex-col items-center gap-4 justify-center my-auto">
-                <div className="rounded-full bg-primary text-primary-foreground size-12 flex items-center justify-center">
-                  <Check size={38} className="" />
-                </div>
-                <h1 className="font-medium text-card-foreground text-lg">
-                  {caughtUpText()}
-                </h1>
-              </CardContent>
-            )}
-          </Card>
-          <Card>
-            <CardHeader>
-              <h1 className="text-lg">Ticket check up</h1>
-            </CardHeader>
-            {checkUpTicket ? (
-              <>
-                <CardContent className="flex flex-col items-left gap-2">
-                  <h1
-                    className={cn(
-                      "text-4xl font-bold",
-                      (statsData?.all_time.oldest_unanswered_ticket
-                        ?.age_minutes || 0) /
-                        60 /
-                        24 >
-                        6
-                        ? "text-destructive"
-                        : "text-primary",
-                    )}
-                  >
-                    {(
-                      (statsData?.all_time.oldest_unanswered_ticket
-                        ?.age_minutes || 0) /
-                      60 /
-                      24
-                    ).toFixed(1)}
-                    d
-                  </h1>
-                  <p className="text-muted-foreground">
-                    slow response · #
-                    {statsData?.all_time.oldest_unanswered_ticket?.id}
-                  </p>
-                  <p className="text-lg">stardance isnt dancing</p>
-                </CardContent>
-                <CardAction className="w-full px-4 mt-auto">
-                  <Button className="w-full text-md" size="lg">
-                    VIEW TICKET
-                    <ArrowUpRight size={16} />
-                  </Button>
-                </CardAction>
-              </>
-            ) : (
-              <CardContent className="flex flex-col items-center gap-4 justify-center my-auto">
-                <div className="rounded-full bg-primary text-primary-foreground size-12 flex items-center justify-center">
-                  <Check size={38} className="" />
-                </div>
-                <h1 className="font-medium text-card-foreground text-lg">
-                  {caughtUpText()}
-                </h1>
-              </CardContent>
-            )}
-          </Card>
-          <Card>
-            <CardHeader>
-              <h1 className="text-lg">
-                Enjoying what your seeing? <em>(or not)</em>
-              </h1>
-            </CardHeader>
-            <CardContent className="flex flex-col items-left gap-2">
-              <h1 className={cn("text-lg font-bold")}>
-                I'd
-                <span className="text-primary">{" <3 "}</span>
-                to hear from you either way!
-              </h1>
-              <p className="text-muted-foreground text-md">
-                Your feedback is greatly appreciated and makes it easier for me
-                to prioritize!
-              </p>
-            </CardContent>
-            <CardAction className="w-full px-4 mt-auto">
-              <Button className="w-full text-md feedback-button" size="lg">
-                FEEDBACK
-                <ArrowUpRight size={16} />
-              </Button>
-            </CardAction>
-          </Card>
+          <TicketWidget
+            ticketId={statsData?.all_time.oldest_unanswered_ticket?.id}
+            ticketAge={
+              statsData?.all_time.oldest_unanswered_ticket?.age_minutes
+            }
+            ticketTitle={
+              ticketsData.find(
+                (t) =>
+                  t.id === statsData?.all_time.oldest_unanswered_ticket?.id,
+              )?.title
+            }
+            ticketWidgetType={"oldest"}
+          />
+          <TicketWidget
+            ticketId={checkUpTicket?.id}
+            ticketAge={
+              Date.now() -
+              new Date(checkUpTicket?.created_at || "").getMinutes()
+              // Uhhhh....
+            }
+            ticketTitle={checkUpTicket?.title}
+            ticketWidgetType={"checkup"}
+          />
+          <SurveyWidget />
         </div>
 
         <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-4 py-2 px-6">
