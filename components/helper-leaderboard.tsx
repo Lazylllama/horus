@@ -2,7 +2,7 @@
 
 import type { CachetEnrichedHelper } from "@/types/nephthys";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Card, CardContent, CardHeader } from "./ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "./ui/card";
 
 export function HelperLeaderboardWidget({
   helperData,
@@ -16,7 +16,7 @@ export function HelperLeaderboardWidget({
   return (
     <Card className="grid-cols-1">
       <CardHeader>
-        <h1 className="text-lg">Helper leaderboard</h1>
+        <h1 className="text-lg">Helper leaderboard (half disabled)</h1>
       </CardHeader>
       <CardContent className="flex flex-col items-left gap-2">
         {helperData

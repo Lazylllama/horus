@@ -18,9 +18,9 @@ export function SurveyWidget() {
           <span className="text-primary">{" <3 "}</span>
           to hear from you either way!
         </h1>
-        <p className="text-muted-foreground text-md">
-          Your feedback is greatly appreciated and makes it easier for me to
-          prioritize!
+        <p className="text-muted-foreground text-[0.9rem]">
+          Your feedback makes it 100x easier for me to prioritize on what to
+          add, change or remove next!
         </p>
       </CardContent>
       <CardAction className="w-full px-4 mt-auto">

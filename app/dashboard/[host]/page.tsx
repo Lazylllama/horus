@@ -1,30 +1,26 @@
 "use client";
 
 import { ArrowUpRight } from "lucide-motion";
-import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useMemo, useState } from "react";
 import { Footer } from "@/components/footer";
 import { HelperLeaderboardWidget } from "@/components/helper-leaderboard";
 import Navbar from "@/components/navbar";
 import { PageWrapper } from "@/components/page-template";
+import { StatusChartWidget } from "@/components/status-chart-widget";
 import { SurveyWidget } from "@/components/survey-widget";
-import { PageDescription, PageHeader } from "@/components/text-types";
+import { PageDescriptionAuth, PageHeader } from "@/components/text-types";
+import { TicketAgeChartWidget } from "@/components/ticket-age-chart-widget";
 import {
   AssignedTicketsWidget,
   UnassignedTicketsWidget,
 } from "@/components/ticket-table";
 import { TicketWidget } from "@/components/ticket-widget";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
 import { nephthysHosts } from "@/lib/nephthys";
-import { caughtUpText, cn, greet, SlackChannelLink } from "@/lib/utils";
+import { greet, SlackChannelLink } from "@/lib/utils";
 import type {
   CachetEnrichedStats,
   Ticket as TicketType,
@@ -41,6 +37,19 @@ export default function Dashboard({
   const [checkUpTicket, _setCheckUpTicket] = useState<TicketType | null>(null);
   const [ticketsData, setTicketsData] = useState<TicketType[]>([]);
   const [statsData, setStatsData] = useState<CachetEnrichedStats>();
+
+  const oldestTicket = useMemo(() => {
+    const openTickets = ticketsData.filter((t) => t.status === "OPEN");
+    return openTickets.reduce(
+      (oldest, ticket) => {
+        if (!oldest || ticket.created_at < oldest.created_at) {
+          return ticket;
+        }
+        return oldest;
+      },
+      null as TicketType | null,
+    );
+  }, [ticketsData]);
 
   useEffect(() => {
     async function fetchTickets() {
@@ -67,7 +76,7 @@ export default function Dashboard({
 
       // TODO: Optional cachet enrichment to improve load speeds cause this shit takes fucking ages
       const statsResponse = fetch(
-        `/api/stats?host=${selectedHost}&cachetEnriched=${true}`,
+        `/api/stats?host=${selectedHost}&cachetEnriched=${false}`,
       );
 
       const statsResponseData = (await (
@@ -130,17 +139,11 @@ export default function Dashboard({
           breadcrumb={selectedHost}
           justifyBetween
         >
-          {session?.user ? (
-            <PageDescription>
-              {userStats.assigned} assigned to you · {userStats.unclaimed}{" "}
-              unclaimed in the queue · {userStats.inProgress} in progress.
-            </PageDescription>
-          ) : (
-            <PageDescription>
-              Sign in to track your assigned tickets and more!
-            </PageDescription>
-          )}
-
+          <PageDescriptionAuth
+            signedOutText="Sign in to see claimed tickets and more!"
+            signedInText={`${userStats.assigned} assigned to you · ${userStats.unclaimed}
+              unclaimed in the queue · ${userStats.inProgress} in progress.`}
+          />
           <div className="flex flex-row gap-2">
             <Button size="lg" variant="outline" onClick={switchHost}>
               SWITCH CHANNEL
@@ -162,29 +165,8 @@ export default function Dashboard({
           </div>
         </PageHeader>
         <div className="grid md:grid-cols-3 grid-cols-2 gap-4 py-2 px-6 min-h-66">
-          <TicketWidget
-            ticketId={statsData?.all_time.oldest_unanswered_ticket?.id}
-            ticketAge={
-              statsData?.all_time.oldest_unanswered_ticket?.age_minutes
-            }
-            ticketTitle={
-              ticketsData.find(
-                (t) =>
-                  t.id === statsData?.all_time.oldest_unanswered_ticket?.id,
-              )?.title
-            }
-            ticketWidgetType={"oldest"}
-          />
-          <TicketWidget
-            ticketId={checkUpTicket?.id}
-            ticketAge={
-              Date.now() -
-              new Date(checkUpTicket?.created_at || "").getMinutes()
-              // Uhhhh....
-            }
-            ticketTitle={checkUpTicket?.title}
-            ticketWidgetType={"checkup"}
-          />
+          <TicketWidget ticket={oldestTicket} ticketWidgetType={"oldest"} />
+          <TicketWidget ticket={checkUpTicket} ticketWidgetType={"checkup"} />
           <SurveyWidget />
         </div>
 
@@ -213,16 +195,12 @@ export default function Dashboard({
         </div>
 
         <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-4 py-2 px-6">
-          <Card className="grid-cols-1">
-            <CardHeader>
-              <h1 className="text-lg">Open ticket ages</h1>
-            </CardHeader>
-          </Card>
-          <Card className="grid-cols-1">
-            <CardHeader>
-              <h1 className="text-lg">Status breakdown</h1>
-            </CardHeader>
-          </Card>
+          <TicketAgeChartWidget />
+          <StatusChartWidget
+            openCount={statsData?.all_time.tickets_open || 0}
+            inProgressCount={statsData?.all_time.tickets_in_progress || 0}
+            closedCount={statsData?.all_time.tickets_closed || 0}
+          />
           <HelperLeaderboardWidget
             helperData={statsData?.all_time?.helpers_leaderboard || []}
           />

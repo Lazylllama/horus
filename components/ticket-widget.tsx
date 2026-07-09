@@ -1,14 +1,14 @@
-import { ArrowUpRight, Check } from "lucide-react";
+import { ArrowUpRight, Check, MessageCircleWarning } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 import { caughtUpText, cn } from "@/lib/utils";
+import type { Ticket } from "@/types/nephthys";
 import { Button } from "./ui/button";
 import { Card, CardAction, CardContent, CardHeader } from "./ui/card";
 
 type TicketWidgetTypes = "oldest" | "checkup";
 
 interface TicketWidgetProps {
-  ticketAge?: number;
-  ticketId?: number;
-  ticketTitle?: string | null;
+  ticket?: Ticket | null;
   ticketWidgetType: TicketWidgetTypes;
 }
 
@@ -21,35 +21,34 @@ const TicketWidgetData: Record<TicketWidgetTypes, { title: string }> = {
   },
 };
 
-export function TicketWidget({
-  ticketAge,
-  ticketId,
-  ticketTitle,
-  ticketWidgetType,
-}: TicketWidgetProps) {
-  console.log(ticketAge);
+export function TicketWidget({ ticket, ticketWidgetType }: TicketWidgetProps) {
+  const { data: session, isPending } = authClient.useSession();
+  const ticketAge =
+    (Date.now() - new Date(ticket?.created_at || "").getTime()) /
+    (1000 * 60 * 60 * 24);
+
   return (
-    <Card>
+    <Card className="min-h-72">
       <CardHeader>
         <h1 className="text-lg">{TicketWidgetData[ticketWidgetType].title}</h1>
       </CardHeader>
-      {ticketId ? (
+      {ticket?.id ? (
         <>
           <CardContent className="flex flex-col items-left gap-2">
             <h1
               className={cn(
                 "text-4xl font-bold",
-                (ticketAge || 0) / 60 / 24 > 6
-                  ? "text-destructive"
-                  : "text-primary",
+                (ticketAge || 0) > 6 ? "text-destructive" : "text-primary",
               )}
             >
-              {((ticketAge || 0) / 60 / 24).toFixed(1)}d
+              {(ticketAge || 0).toFixed(1)}d
             </h1>
-            <p className="text-muted-foreground">slow response · #{ticketId}</p>
-            <p className="text-lg">{ticketTitle}</p>
+            <p className="text-muted-foreground">
+              slow response · #{ticket?.id}
+            </p>
+            <p className="text-lg">{ticket?.title}</p>
           </CardContent>
-          <CardAction className="w-full px-4">
+          <CardAction className="w-full px-4 mt-auto">
             <Button className="w-full text-md" size="lg">
               VIEW TICKET
               <ArrowUpRight size={16} />
@@ -58,11 +57,24 @@ export function TicketWidget({
         </>
       ) : (
         <CardContent className="flex flex-col items-center gap-4 justify-center my-auto">
-          <div className="rounded-full bg-primary text-primary-foreground size-12 flex items-center justify-center">
-            <Check size={38} />
+          <div
+            className={cn(
+              "rounded-full size-12 flex items-center justify-center",
+              !session?.user && ticketWidgetType === "checkup"
+                ? "bg-destructive/30 text-destructive"
+                : "bg-primary/30 text-primary",
+            )}
+          >
+            {!session?.user && ticketWidgetType === "checkup" ? (
+              <MessageCircleWarning size={28} />
+            ) : (
+              <Check size={36} />
+            )}
           </div>
           <h1 className="font-medium text-card-foreground text-lg">
-            {caughtUpText()}
+            {!session?.user && ticketWidgetType === "checkup"
+              ? "Sign in to use this!"
+              : caughtUpText()}
           </h1>
         </CardContent>
       )}

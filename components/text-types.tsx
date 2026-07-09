@@ -1,5 +1,7 @@
 "use client";
 
+import { authClient } from "@/lib/auth-client";
+
 function PageBreadcrumb({ name }: { name: string }) {
   return (
     <p className="text-xs font-medium tracking-widest text-primary">
@@ -10,6 +12,21 @@ function PageBreadcrumb({ name }: { name: string }) {
 
 function PageTitle({ title }: { title: string }) {
   return <h1 className="text-4xl font-bold font-heading">{title}</h1>;
+}
+
+export function PageDescriptionAuth({
+  signedInText,
+  signedOutText,
+}: {
+  signedInText: string;
+  signedOutText: string;
+}) {
+  const { data: session } = authClient.useSession();
+  return (
+    <p className="text-md text-muted-foreground max-w-xl tracking-wide">
+      {session?.user ? signedInText : signedOutText}
+    </p>
+  );
 }
 
 export function PageDescription({ children }: { children: React.ReactNode }) {
