@@ -2,7 +2,7 @@
 
 import type { CachetEnrichedHelper } from "@/types/nephthys";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Card, CardContent, CardDescription, CardHeader } from "./ui/card";
+import { Card, CardContent, CardHeader } from "./ui/card";
 
 export function HelperLeaderboardWidget({
   helperData,

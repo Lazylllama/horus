@@ -17,7 +17,6 @@ import {
 } from "@/components/ticket-table";
 import { TicketWidget } from "@/components/ticket-widget";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
 import { nephthysHosts } from "@/lib/nephthys";
 import { greet, SlackChannelLink } from "@/lib/utils";

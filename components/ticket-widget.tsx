@@ -22,7 +22,7 @@ const TicketWidgetData: Record<TicketWidgetTypes, { title: string }> = {
 };
 
 export function TicketWidget({ ticket, ticketWidgetType }: TicketWidgetProps) {
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session } = authClient.useSession();
   const ticketAge =
     (Date.now() - new Date(ticket?.created_at || "").getTime()) /
     (1000 * 60 * 60 * 24);
