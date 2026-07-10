@@ -24,7 +24,11 @@ export function SurveyWidget() {
         </p>
       </CardContent>
       <CardAction className="w-full px-4 mt-auto">
-        <Button className="w-full text-md feedback-button" size="lg">
+        <Button
+          suppressHydrationWarning // "phwidgetsurveyclicklistener"
+          className="w-full text-md feedback-button"
+          size="lg"
+        >
           FEEDBACK
           <ArrowUpRight size={16} />
         </Button>
