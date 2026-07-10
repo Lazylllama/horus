@@ -24,10 +24,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { Skeleton } from "./ui/skeleton";
 
 export default function Navbar({ selectedHost }: { selectedHost: string }) {
   const router = useRouter();
-  const session = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
 
   function handleLogin() {
     authClient.signIn.oauth2({
@@ -75,29 +76,38 @@ export default function Navbar({ selectedHost }: { selectedHost: string }) {
         <div className="flex items-center gap-2">
           <ThemeSwitcher />
           <SettingsModal />
-          {session.data ? (
+          {session || isPending ? (
             <Card className="flex items-center p-1">
               <CardContent className="flex items-center gap-3 px-1">
                 <Avatar>
                   <AvatarImage
                     className="rounded-xs"
-                    src={session.data.user.image || ""}
-                    alt={session.data.user.name}
+                    src={session?.user.image || ""}
+                    alt={session?.user.name}
                   />
-                  <AvatarFallback>
-                    {session.data.user.name?.charAt(0)}
+                  <AvatarFallback className="rounded-xs">
+                    {session?.user.name?.charAt(0) || "?"}
                   </AvatarFallback>
                 </Avatar>
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     render={
                       <button type="button" className="text-left">
-                        <p className="font-extrabold">
-                          {session.data.user.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {session.data.user.slack_id}
-                        </p>
+                        {isPending ? (
+                          <div className="flex flex-col gap-2 my-1">
+                            <Skeleton className="h-3 w-16" />
+                            <Skeleton className="h-2 w-20.5" />
+                          </div>
+                        ) : (
+                          <>
+                            <p className="font-extrabold">
+                              {session?.user.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {session?.user.slack_id}
+                            </p>
+                          </>
+                        )}
                       </button>
                     }
                   />

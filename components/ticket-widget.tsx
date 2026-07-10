@@ -1,4 +1,9 @@
-import { ArrowUpRight, Check, MessageCircleWarning } from "lucide-react";
+import {
+  ArrowUpRight,
+  Check,
+  Loader,
+  MessageCircleWarning,
+} from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { caughtUpText, cn } from "@/lib/utils";
 import type { Ticket } from "@/types/nephthys";
@@ -21,8 +26,10 @@ const TicketWidgetData: Record<TicketWidgetTypes, { title: string }> = {
   },
 };
 
+const caughtUpTextConst = caughtUpText();
+
 export function TicketWidget({ ticket, ticketWidgetType }: TicketWidgetProps) {
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
   const ticketAge =
     (Date.now() - new Date(ticket?.created_at || "").getTime()) /
     (1000 * 60 * 60 * 24);
@@ -60,21 +67,27 @@ export function TicketWidget({ ticket, ticketWidgetType }: TicketWidgetProps) {
           <div
             className={cn(
               "rounded-full size-12 flex items-center justify-center",
-              !session?.user && ticketWidgetType === "checkup"
-                ? "bg-destructive/30 text-destructive"
-                : "bg-primary/30 text-primary",
+              isPending
+                ? "bg-orange-400/30 text-orange-400"
+                : !session?.user && ticketWidgetType === "checkup"
+                  ? "bg-destructive/30 text-destructive"
+                  : "bg-primary/30 text-primary",
             )}
           >
-            {!session?.user && ticketWidgetType === "checkup" ? (
+            {isPending ? (
+              <Loader className="animate-spin" />
+            ) : !session?.user && ticketWidgetType === "checkup" ? (
               <MessageCircleWarning size={28} />
             ) : (
               <Check size={36} />
             )}
           </div>
           <h1 className="font-medium text-card-foreground text-lg">
-            {!session?.user && ticketWidgetType === "checkup"
-              ? "Sign in to use this!"
-              : caughtUpText()}
+            {isPending
+              ? "Loading..."
+              : !session?.user && ticketWidgetType === "checkup"
+                ? "Sign in to see this"
+                : caughtUpTextConst}
           </h1>
         </CardContent>
       )}
