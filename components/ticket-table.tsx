@@ -4,7 +4,6 @@ import {
 } from "@1771technologies/lytenyte-core";
 import type { CellRendererParams } from "@1771technologies/lytenyte-core/types";
 import { ArrowUpRight, MailWarning } from "lucide-react";
-import { useState } from "react";
 import { LyteNyte } from "@/components/lytenyte-core";
 import useWindowDimensions from "@/lib/use-window-dimensions";
 import { cn, relativeTime, SlackMessageLink } from "@/lib/utils";

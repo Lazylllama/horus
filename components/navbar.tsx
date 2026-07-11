@@ -18,19 +18,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
 import { Skeleton } from "./ui/skeleton";
 
 export default function Navbar({ selectedHost }: { selectedHost: string }) {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
-  const windowSize = useWindowDimensions();
+  const _windowSize = useWindowDimensions();
 
   function handleLogin() {
     authClient.signIn.oauth2({
@@ -42,7 +35,7 @@ export default function Navbar({ selectedHost }: { selectedHost: string }) {
     authClient.signOut();
   }
 
-  function handleHostChange(value: string | null) {
+  function _handleHostChange(value: string | null) {
     if (!value || !nephthysHosts.some((host) => host.host === value)) return;
     const hostName = nephthysHosts.find((host) => host.host === value)?.name;
     router.push(`/dashboard/${hostName}`);

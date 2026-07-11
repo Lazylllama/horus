@@ -1,3 +1,5 @@
+/** biome-ignore-all lint/suspicious/noArrayIndexKey: default */
+/** biome-ignore-all lint/security/noDangerouslySetInnerHtml: default */
 "use client";
 
 import * as React from "react";
