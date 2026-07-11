@@ -55,7 +55,7 @@ export default function Navbar({ selectedHost }: { selectedHost: string }) {
             <div className="size-2.5 bg-primary"></div>
             <h1 className="text-lg font-semibold tracking-tight">nephthys</h1>
           </div>
-          <Select
+          {/* <Select
             value={selectedHost}
             onValueChange={(e) => handleHostChange(e as string)}
           >
@@ -71,7 +71,7 @@ export default function Navbar({ selectedHost }: { selectedHost: string }) {
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>
+          </Select> */}
         </div>
         <div className="flex items-center gap-2">
           <ThemeSwitcher />

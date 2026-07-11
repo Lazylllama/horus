@@ -35,6 +35,7 @@ export default function Dashboard({
   const { data: session, isPending } = authClient.useSession();
   const [checkUpTicket, _setCheckUpTicket] = useState<TicketType | null>(null);
   const [ticketsData, setTicketsData] = useState<TicketType[]>([]);
+  const [closedTickets, setClosedTickets] = useState<TicketType[]>([]);
   const [statsData, setStatsData] = useState<CachetEnrichedStats>();
 
   const oldestTicket = useMemo(() => {
@@ -58,8 +59,16 @@ export default function Dashboard({
         `/api/tickets?host=${selectedHost}&status=open,in_progress`,
       );
 
+      const closedTicketsResponse = fetch(
+        `/api/tickets?host=${selectedHost}&status=closed`,
+      );
+
       const ticketsResponseData = (await (
         await ticketsResponse
+      ).json()) as TicketType[];
+
+      const closedTicketsResponseData = (await (
+        await closedTicketsResponse
       ).json()) as TicketType[];
 
       if (!Array.isArray(ticketsResponseData)) {
@@ -67,7 +76,16 @@ export default function Dashboard({
         return;
       }
 
+      if (!Array.isArray(closedTicketsResponseData)) {
+        console.error(
+          "Invalid closed tickets data:",
+          closedTicketsResponseData,
+        );
+        return;
+      }
+
       setTicketsData(ticketsResponseData);
+      setClosedTickets(closedTicketsResponseData);
     }
 
     async function fetchStats() {
@@ -194,7 +212,7 @@ export default function Dashboard({
         </div>
 
         <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-4 py-2 px-6">
-          <TicketAgeChartWidget />
+          <TicketAgeChartWidget closedTickets={closedTickets} />
           <StatusChartWidget
             openCount={statsData?.all_time.tickets_open || 0}
             inProgressCount={statsData?.all_time.tickets_in_progress || 0}

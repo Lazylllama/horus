@@ -40,7 +40,7 @@ function TicketTable({
     data: tickets,
   });
 
-  const assignedTicketsHeader: Grid.Column<Spec>[] = [
+  const ticketsHeader: Grid.Column<Spec>[] = [
     { id: "id", name: "ID", width: 40, cellRenderer: IDCellRenderer },
     {
       id: "title",
@@ -75,11 +75,11 @@ function TicketTable({
     {
       id: "created_at",
       name: "Created",
-      width: 150,
+      width:   (tickets.length < 12 ? 163 : 150), // Fits perfect in max width (needs fix for longer lists)
       cellRenderer: DateCellRenderer,
     },
   ];
-  return <LyteNyte columns={assignedTicketsHeader} rowSource={ticketsData} />;
+  return <LyteNyte columns={ticketsHeader} rowSource={ticketsData} />;
 }
 
 export function AssignedTicketsWidget({
