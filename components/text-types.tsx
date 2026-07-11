@@ -1,6 +1,7 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 
 function PageBreadcrumb({ name }: { name: string }) {
   return (
@@ -63,21 +64,30 @@ export function PageHeader({
   breadcrumb,
   title,
   justifyBetween = false,
+  center = false,
   children,
 }: {
   breadcrumb: string;
   title: string;
   justifyBetween?: boolean;
+  center?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-1 flex-col gap-4 px-6 py-2">
+    <div
+      className={cn(
+        "flex  flex-col gap-4 px-6 py-2",
+        center ? "flex-col items-center justify-center" : "flex-1",
+      )}
+    >
       <PageBreadcrumb name={breadcrumb} />
       <PageTitle title={title} />
       <div
-        className={`flex flex-col gap-4 ${
-          justifyBetween ? "lg:flex-row lg:justify-between" : ""
-        }`}
+        className={cn(
+          "flex flex-col gap-4",
+          justifyBetween && "lg:flex-row lg:justify-between",
+          center && "justify-center items-center",
+        )}
       >
         {children}
       </div>

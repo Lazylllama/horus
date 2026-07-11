@@ -75,38 +75,40 @@ export default function Navbar({ selectedHost }: { selectedHost: string }) {
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
-                  <Card className="flex items-center p-1">
-                    <CardContent className="flex items-center gap-3 px-0 md:px-1">
-                      <Avatar>
-                        <AvatarImage
-                          className="rounded-xs"
-                          src={session?.user.image || ""}
-                          alt={session?.user.name}
-                        />
-                        <AvatarFallback className="rounded-xs">
-                          {session?.user.name?.charAt(0) || "?"}
-                        </AvatarFallback>
-                      </Avatar>
+                  <button type="button">
+                    <Card className="flex items-center p-1">
+                      <CardContent className="flex items-center gap-3 px-0 md:px-1">
+                        <Avatar>
+                          <AvatarImage
+                            className="rounded-xs"
+                            src={session?.user.image || ""}
+                            alt={session?.user.name}
+                          />
+                          <AvatarFallback className="rounded-xs">
+                            {session?.user.name?.charAt(0) || "?"}
+                          </AvatarFallback>
+                        </Avatar>
 
-                      <div className="text-left hidden md:block">
-                        {isPending ? (
-                          <div className="flex flex-col gap-2 my-1">
-                            <Skeleton className="h-3 w-16" />
-                            <Skeleton className="h-2 w-20.5" />
-                          </div>
-                        ) : (
-                          <>
-                            <p className="font-extrabold">
-                              {session?.user.name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {session?.user.slack_id}
-                            </p>
-                          </>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                        <div className="text-left hidden md:block">
+                          {isPending ? (
+                            <div className="flex flex-col gap-2 my-1">
+                              <Skeleton className="h-3 w-16" />
+                              <Skeleton className="h-2 w-20.5" />
+                            </div>
+                          ) : (
+                            <>
+                              <p className="font-extrabold">
+                                {session?.user.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {session?.user.slack_id}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </button>
                 }
               />
               <DropdownMenuContent className="w-40" align="start">

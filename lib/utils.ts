@@ -71,3 +71,15 @@ export function SlackMessageLink(channelId: string, messageTs: string) {
   //! /p${messageTs.replace(".", "")} for normal link
   return `${SlackChannelLink(channelId)}&thread_ts=${messageTs}`;
 }
+
+const KnownErrors: { [key: string]: string } = {
+  "Invalid tickets data":
+    "We were unable to fetch the data from the nephthys instance, please make sure that the host is working normally.",
+};
+
+export function GetErrorDescription(error: Error) {
+  if (KnownErrors[error.message]) {
+    return KnownErrors[error.message];
+  }
+  return error.message;
+}
