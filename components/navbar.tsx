@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { nephthysHosts } from "@/lib/nephthys";
+import useWindowDimensions from "@/lib/use-window-dimensions";
 import { SettingsModal } from "./settings-modal";
 import { SiteBanner } from "./site-banner";
 import { ThemeSwitcher } from "./theme-switcher";
@@ -29,6 +30,7 @@ import { Skeleton } from "./ui/skeleton";
 export default function Navbar({ selectedHost }: { selectedHost: string }) {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
+  const windowSize = useWindowDimensions();
 
   function handleLogin() {
     authClient.signIn.oauth2({
@@ -77,22 +79,23 @@ export default function Navbar({ selectedHost }: { selectedHost: string }) {
           <ThemeSwitcher />
           <SettingsModal />
           {session || isPending ? (
-            <Card className="flex items-center p-1">
-              <CardContent className="flex items-center gap-3 px-1">
-                <Avatar>
-                  <AvatarImage
-                    className="rounded-xs"
-                    src={session?.user.image || ""}
-                    alt={session?.user.name}
-                  />
-                  <AvatarFallback className="rounded-xs">
-                    {session?.user.name?.charAt(0) || "?"}
-                  </AvatarFallback>
-                </Avatar>
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={
-                      <button type="button" className="text-left">
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Card className="flex items-center p-1">
+                    <CardContent className="flex items-center gap-3 px-0 md:px-1">
+                      <Avatar>
+                        <AvatarImage
+                          className="rounded-xs"
+                          src={session?.user.image || ""}
+                          alt={session?.user.name}
+                        />
+                        <AvatarFallback className="rounded-xs">
+                          {session?.user.name?.charAt(0) || "?"}
+                        </AvatarFallback>
+                      </Avatar>
+
+                      <div className="text-left hidden md:block">
                         {isPending ? (
                           <div className="flex flex-col gap-2 my-1">
                             <Skeleton className="h-3 w-16" />
@@ -108,20 +111,20 @@ export default function Navbar({ selectedHost }: { selectedHost: string }) {
                             </p>
                           </>
                         )}
-                      </button>
-                    }
-                  />
-                  <DropdownMenuContent className="w-40" align="start">
-                    <DropdownMenuGroup>
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={handleSignOut}>
-                        Logout
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </CardContent>
-            </Card>
+                      </div>
+                    </CardContent>
+                  </Card>
+                }
+              />
+              <DropdownMenuContent className="w-40" align="start">
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Button size="xl" className="text-md" onClick={handleLogin}>
               Sign in →

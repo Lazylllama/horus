@@ -7,7 +7,7 @@ import {
   YAxis,
 } from "recharts";
 import type { Ticket } from "@/types/nephthys";
-import { Card, CardContent, CardHeader } from "./ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "./ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 
 type TimeDurations =
@@ -48,16 +48,6 @@ const chartConfig: Record<TimeDurations, { label: string; color: string }> = {
     label: "More",
     color: "var(--color-destructive)",
   },
-};
-
-const barLabelForeground: Record<TimeDurations, string> = {
-  "5 Minutes": "fill-primary-foreground",
-  "1 Hour": "fill-primary-foreground",
-  "12 Hours": "fill-primary-foreground",
-  "24 Hours": "fill-orange-foreground",
-  "4 Days": "fill-orange-foreground",
-  "7 Days": "fill-destructive-foreground",
-  More: "fill-destructive-foreground",
 };
 
 export function TicketAgeChartWidget({
@@ -103,7 +93,7 @@ export function TicketAgeChartWidget({
   return (
     <Card className="grid-cols-1">
       <CardHeader>
-        <h1 className="text-lg">Open ticket ages</h1>
+        <h1 className="text-lg">Time-to-resolution</h1>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
@@ -112,7 +102,7 @@ export function TicketAgeChartWidget({
             data={chartData}
             layout="vertical"
             margin={{
-              right: 16,
+              right: 36,
             }}
           >
             <CartesianGrid horizontal={false} />
@@ -120,10 +110,15 @@ export function TicketAgeChartWidget({
               dataKey="name"
               type="category"
               tickLine={false}
-              tickMargin={20}
+              tickMargin={16}
               axisLine={false}
-              tickFormatter={(value) => value.slice(0, 3)}
-              hide
+              tickFormatter={(value: string) =>
+                value
+                  .replace(" Minutes", "m")
+                  .replace(" Hours", "h")
+                  .replace(" Days", "d")
+                  .replace(" Hour", "h")
+              }
             />
             <XAxis dataKey="value" type="number" hide />
             <ChartTooltip
@@ -131,24 +126,6 @@ export function TicketAgeChartWidget({
               content={<ChartTooltipContent indicator="line" />}
             />
             <Bar dataKey="value" fill={`var()`} radius={4}>
-              <LabelList
-                dataKey="name"
-                position="insideLeft"
-                content={({ x, y, height, value }) => {
-                  const category = value as TimeDurations;
-                  return (
-                    <text
-                      x={Number(x) + 8}
-                      y={Number(y) + Number(height) / 2}
-                      dominantBaseline="central"
-                      fontSize={12}
-                      className={barLabelForeground[category]}
-                    >
-                      {category}
-                    </text>
-                  );
-                }}
-              />
               <LabelList
                 dataKey="value"
                 position="right"
@@ -159,6 +136,9 @@ export function TicketAgeChartWidget({
             </Bar>
           </BarChart>
         </ChartContainer>
+        <CardDescription className="text-center mt-3">
+          *Based on all tickets since start
+        </CardDescription>
       </CardContent>
     </Card>
   );

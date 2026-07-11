@@ -181,7 +181,7 @@ export default function Dashboard({
             </Button>
           </div>
         </PageHeader>
-        <div className="grid md:grid-cols-3 grid-cols-2 gap-4 py-2 px-6 min-h-66">
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4 py-2 px-6 min-h-66">
           <TicketWidget ticket={oldestTicket} ticketWidgetType={"oldest"} />
           <TicketWidget ticket={checkUpTicket} ticketWidgetType={"checkup"} />
           <SurveyWidget />

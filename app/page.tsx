@@ -9,20 +9,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
 import { nephthysHosts } from "@/lib/nephthys";
+import useWindowDimensions from "@/lib/use-window-dimensions";
 import { cn } from "@/lib/utils";
 
 export default function Home() {
   const router = useRouter();
   const { data: session, isPending: _ } = authClient.useSession();
-  const [selectedHost, setSelectedHost] = useState(nephthysHosts[0].host);
+  const [selectedHost, setSelectedHost] = useState("");
+  const windowSize = useWindowDimensions();
 
   function handleHostCardClick(host: string) {
     setSelectedHost(host);
+    if (windowSize.width < 768) handleSelectHost(host);
   }
 
-  function handleSelectHost() {
+  function handleSelectHost(overrideHost?: string) {
     const hostName = nephthysHosts.find(
-      (host) => host.host === selectedHost,
+      (host) => host.host === (overrideHost || selectedHost),
     )?.name;
     router.push(`/dashboard/${hostName}`);
   }
@@ -78,7 +81,7 @@ export default function Home() {
           </Card>
         ))}
       </div>
-      <div className="px-6">
+      <div className="px-6 hidden md:block">
         <Button
           className="text-primary-foreground text-sm p-4"
           size="lg"

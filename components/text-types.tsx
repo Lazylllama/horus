@@ -11,7 +11,11 @@ function PageBreadcrumb({ name }: { name: string }) {
 }
 
 function PageTitle({ title }: { title: string }) {
-  return <h1 className="text-4xl font-bold font-heading">{title}</h1>;
+  return (
+    <h1 className="text-4xl font-bold font-heading max-w-72 sm:max-w-none">
+      {title}
+    </h1>
+  );
 }
 
 export function PageDescriptionAuth({

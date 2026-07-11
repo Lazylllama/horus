@@ -4,7 +4,9 @@ import {
 } from "@1771technologies/lytenyte-core";
 import type { CellRendererParams } from "@1771technologies/lytenyte-core/types";
 import { ArrowUpRight, MailWarning } from "lucide-react";
+import { useState } from "react";
 import { LyteNyte } from "@/components/lytenyte-core";
+import useWindowDimensions from "@/lib/use-window-dimensions";
 import { cn, relativeTime, SlackMessageLink } from "@/lib/utils";
 import type { Ticket } from "@/types/nephthys";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -40,12 +42,19 @@ function TicketTable({
     data: tickets,
   });
 
+  const windowSize = useWindowDimensions();
+
   const ticketsHeader: Grid.Column<Spec>[] = [
-    { id: "id", name: "ID", width: 40, cellRenderer: IDCellRenderer },
+    {
+      id: "id",
+      name: "ID",
+      width: 40,
+      cellRenderer: IDCellRenderer,
+    },
     {
       id: "title",
       name: "Title",
-      width: 420,
+      width: windowSize.width > 720 ? 420 : 300,
       cellRenderer: ({ api, row }) => {
         if (!api.rowIsLeaf(row) || !row.data) return;
         return (
@@ -75,10 +84,16 @@ function TicketTable({
     {
       id: "created_at",
       name: "Created",
-      width:   (tickets.length < 12 ? 163 : 150), // Fits perfect in max width (needs fix for longer lists)
+      width: tickets.length < 12 ? 163 : 150, // Fits perfect in max width (needs fix for longer lists)
       cellRenderer: DateCellRenderer,
     },
   ];
+
+  if (windowSize.width < 720) {
+    // Removes annoying data
+    ticketsHeader.splice(0, 1); // Remove ID
+    ticketsHeader.splice(1, 1); // Remove status
+  }
   return <LyteNyte columns={ticketsHeader} rowSource={ticketsData} />;
 }
 
