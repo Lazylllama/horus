@@ -63,9 +63,11 @@ export function relativeTime(delta: number) {
 }
 
 export function SlackChannelLink(channelId: string) {
-  return `https://hackclub.enterprise.slack.com/archives/${channelId}`;
+  return `slack://channel?team=E09V59WQY1E&id=${channelId}`;
+  //return `https://hackclub.enterprise.slack.com/archives/${channelId}`;
 }
 
 export function SlackMessageLink(channelId: string, messageTs: string) {
-  return `${SlackChannelLink(channelId)}/p${messageTs.replace(".", "")}`;
+  //! /p${messageTs.replace(".", "")} for normal link
+  return `${SlackChannelLink(channelId)}&thread_ts=${messageTs}`;
 }
