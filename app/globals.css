@@ -120,7 +120,7 @@
 }
 
 .ln-shadcn {
-  --ln-bg-row-alternate: transparent;
+  --ln-bg-row-alternate: transparent !important;
 }
 
 @layer base {
