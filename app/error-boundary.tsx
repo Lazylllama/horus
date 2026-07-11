@@ -11,7 +11,12 @@ function ErrorFallback(
   props: { title: string },
   { error, unstable_retry }: ErrorInfo,
 ) {
-  console.log(JSON.stringify(error));
+  function ReachOut() {
+    window.open(
+      "https://hackclub.enterprise.slack.com/team/U07F2QA059B",
+      "_blank",
+    );
+  }
   return (
     <PageWrapper variant="tight">
       <PageHeader title={error.message} breadcrumb={"ERROR"}>
@@ -32,7 +37,12 @@ function ErrorFallback(
             Retry
             <RotateCcw size={12} />
           </Button>
-          <Button variant={"link"} size={"xl"} className={"text-md"}>
+          <Button
+            onClick={ReachOut}
+            variant={"link"}
+            size={"xl"}
+            className={"text-md"}
+          >
             Reach out <ArrowUpRight />
           </Button>
         </div>
