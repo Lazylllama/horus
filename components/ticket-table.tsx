@@ -28,7 +28,8 @@ function OpenRandomTicket(tickets: Ticket[], slackChannel: string) {
     tickets[randomIndex].message_ts,
   );
 
-  window.open(ticketLink, "_blank");
+  // deeplink
+  window.location.href = ticketLink;
 }
 
 function TicketTable({
@@ -60,7 +61,6 @@ function TicketTable({
         return (
           <a
             href={SlackMessageLink(slackChannel, row.data.message_ts)}
-            target="_blank"
             rel="noopener noreferrer"
             className="text-primary underline"
           >

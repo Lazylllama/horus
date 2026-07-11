@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 export default function Home() {
   const router = useRouter();
-  const { data: session, isPending: _ } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
   const [selectedHost, setSelectedHost] = useState("");
   const windowSize = useWindowDimensions();
 
@@ -86,11 +86,12 @@ export default function Home() {
           className="text-primary-foreground text-sm p-4"
           size="lg"
           onClick={() => handleSelectHost()}
+          disabled={selectedHost === ""}
         >
           Enter {nephthysHosts.find((host) => host.host === selectedHost)?.name}{" "}
           Dashboard
         </Button>
-        {!session?.user && (
+        {!session?.user && !isPending && (
           <Button
             className="text-sm p-4 ml-2"
             size="lg"

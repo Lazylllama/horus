@@ -139,7 +139,7 @@ export default function Dashboard({
   }
 
   function openSlackChannel(channelId: string) {
-    window.open(SlackChannelLink(channelId), "_blank");
+    window.open(SlackChannelLink(channelId), "");
   }
 
   function switchHost() {
@@ -182,8 +182,24 @@ export default function Dashboard({
           </div>
         </PageHeader>
         <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4 py-2 px-6 min-h-66">
-          <TicketWidget ticket={oldestTicket} ticketWidgetType={"oldest"} />
-          <TicketWidget ticket={checkUpTicket} ticketWidgetType={"checkup"} />
+          <TicketWidget
+            slackChannel={
+              nephthysHosts.find(
+                (h) => h.name.toLowerCase() === selectedHost.toLowerCase(),
+              )?.channel || "#"
+            }
+            ticket={oldestTicket}
+            ticketWidgetType={"oldest"}
+          />
+          <TicketWidget
+            slackChannel={
+              nephthysHosts.find(
+                (h) => h.name.toLowerCase() === selectedHost.toLowerCase(),
+              )?.channel || "#"
+            }
+            ticket={checkUpTicket}
+            ticketWidgetType={"checkup"}
+          />
           <SurveyWidget />
         </div>
 

@@ -5,7 +5,7 @@ import {
   MessageCircleWarning,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-import { caughtUpText, cn } from "@/lib/utils";
+import { caughtUpText, cn, SlackMessageLink } from "@/lib/utils";
 import type { Ticket } from "@/types/nephthys";
 import { Button } from "./ui/button";
 import { Card, CardAction, CardContent, CardHeader } from "./ui/card";
@@ -15,6 +15,7 @@ type TicketWidgetTypes = "oldest" | "checkup";
 interface TicketWidgetProps {
   ticket?: Ticket | null;
   ticketWidgetType: TicketWidgetTypes;
+  slackChannel: string;
 }
 
 const TicketWidgetData: Record<TicketWidgetTypes, { title: string }> = {
@@ -28,11 +29,21 @@ const TicketWidgetData: Record<TicketWidgetTypes, { title: string }> = {
 
 const caughtUpTextConst = caughtUpText();
 
-export function TicketWidget({ ticket, ticketWidgetType }: TicketWidgetProps) {
+export function TicketWidget({
+  ticket,
+  ticketWidgetType,
+  slackChannel,
+}: TicketWidgetProps) {
   const { data: session, isPending } = authClient.useSession();
   const ticketAge =
     (Date.now() - new Date(ticket?.created_at || "").getTime()) /
     (1000 * 60 * 60 * 24);
+
+  function openTicket() {
+    if (ticket) {
+      window.location.href = SlackMessageLink(slackChannel, ticket.message_ts);
+    }
+  }
 
   return (
     <Card className="min-h-72">
@@ -56,7 +67,7 @@ export function TicketWidget({ ticket, ticketWidgetType }: TicketWidgetProps) {
             <p className="text-lg">{ticket?.title}</p>
           </CardContent>
           <CardAction className="w-full px-4 mt-auto">
-            <Button className="w-full text-md" size="lg">
+            <Button onClick={openTicket} className="w-full text-md" size="lg">
               VIEW TICKET
               <ArrowUpRight size={16} />
             </Button>
