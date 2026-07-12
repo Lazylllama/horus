@@ -1,3 +1,5 @@
+/** biome-ignore-all lint/complexity/noImportantStyles: yes */
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -125,7 +127,7 @@
 }
 
 .ln-shadcn {
-  --ln-bg-row-alternate: transparent;
+  --ln-bg-row-alternate: transparent !important;
 }
 
 @layer base {

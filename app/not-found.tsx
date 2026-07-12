@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, RotateCcw } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { PageWrapper } from "@/components/page-template";
 import { PageDescription, PageHeader } from "@/components/text-types";

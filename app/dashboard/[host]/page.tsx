@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowUpRight } from "lucide-motion";
-import { ErrorBoundary } from "next/dist/client/components/error-boundary";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useMemo, useState } from "react";
 import ErrorFallback from "@/app/error-boundary";
@@ -159,8 +158,8 @@ export default function Dashboard({
 
   return (
     <>
-      <Navbar selectedHost={selectedHost} />
-      <ErrorFallback title="ERROR">
+      <Navbar />
+      <ErrorFallback title={"ERR"}>
         <ThrowError error={fetchError} />
         <PageWrapper variant="tight">
           <PageHeader

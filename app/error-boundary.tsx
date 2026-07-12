@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { GetErrorDescription } from "@/lib/utils";
 
 function ErrorFallback(
-  props: { title: string },
+  _props: { title: string },
   { error, unstable_retry }: ErrorInfo,
 ) {
   function ReachOut() {
@@ -23,7 +23,6 @@ function ErrorFallback(
         <PageDescription>
           {GetErrorDescription(error)} This error was automatically logged, if
           this is a major disruption, please reach out using the button below.
-          Thank you.
           <br />
           <br />
           Stack: {error.stack}

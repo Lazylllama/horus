@@ -20,7 +20,7 @@ import {
 } from "./ui/dropdown-menu";
 import { Skeleton } from "./ui/skeleton";
 
-export default function Navbar({ selectedHost }: { selectedHost: string }) {
+export default function Navbar() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const _windowSize = useWindowDimensions();
