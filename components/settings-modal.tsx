@@ -1,3 +1,4 @@
+import { updatePreferences } from "@/app/actions/preferences";
 import posthog from "posthog-js";
 import { Button } from "./ui/button";
 import { CogIcon } from "./ui/cog";
@@ -10,7 +11,11 @@ import {
 } from "./ui/dialog";
 
 export function SettingsModal() {
-  function TogglePosthogCollection() {
+  async function TogglePosthogCollection() {
+    await updatePreferences({
+      isOptedOutTracking: posthog.has_opted_in_capturing(),
+    });
+
     if (posthog.has_opted_in_capturing()) {
       posthog.opt_out_capturing();
     } else {

@@ -1,8 +1,8 @@
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { genericOAuth } from "better-auth/plugins";
 import { db } from "@/db";
 import * as schema from "@/db/schemas/auth-schema";
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { customSession, genericOAuth } from "better-auth/plugins";
 
 const CACHET_HOST = process.env.CACHET_HOST || "https://cachet.hackclub.com";
 
@@ -21,6 +21,9 @@ export const auth = betterAuth({
         unique: true,
       },
     },
+  },
+  session: {
+    cookieCache: { enabled: true, maxAge: 60 * 5 }, // 5 min
   },
   plugins: [
     genericOAuth({
@@ -50,7 +53,7 @@ export const auth = betterAuth({
               return null;
             }
 
-            var userInfo = await authResponse.json();
+            let userInfo = await authResponse.json();
             userInfo = userInfo.identity || userInfo;
 
             const cachetResponse = await fetch(
@@ -79,6 +82,12 @@ export const auth = betterAuth({
           },
         },
       ],
+    }),
+    customSession(async ({ user, session }) => {
+      const userPrefs = await db.query.user_preferences.findFirst({
+        where: { userId: user.id },
+      });
+      return { user, session, preferences: userPrefs ?? null };
     }),
   ],
 });

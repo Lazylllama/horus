@@ -1,33 +1,37 @@
 "use client";
 
-import { Check } from "lucide-motion";
-import { Loader } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { PageWrapper } from "@/components/page-template";
 import { LinkHref, PageDescription, PageHeader } from "@/components/text-types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
-import { nephthysHosts } from "@/lib/nephthys";
+import { GetNephthysNameFromHost, nephthysHosts } from "@/lib/nephthys";
 import useWindowDimensions from "@/lib/use-window-dimensions";
 import { cn } from "@/lib/utils";
+import { Check } from "lucide-motion";
+import { Loader } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import posthog from "posthog-js";
+import { useState } from "react";
+import { updatePreferences } from "./actions/preferences";
 
 export default function Home() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const [selectedHost, setSelectedHost] = useState("");
   const windowSize = useWindowDimensions();
+  const searchParams = useSearchParams();
 
   function handleHostCardClick(host: string) {
     setSelectedHost(host);
     if (windowSize.width < 768) handleSelectHost(host);
   }
 
-  function handleSelectHost(overrideHost?: string) {
-    const hostName = nephthysHosts.find(
-      (host) => host.host === (overrideHost || selectedHost),
-    )?.name;
+  async function handleSelectHost(overrideHost?: string) {
+    const hostName = GetNephthysNameFromHost(overrideHost || selectedHost);
+    await updatePreferences({
+      defaultHost: overrideHost || selectedHost,
+    });
     router.push(`/dashboard/${hostName}`);
   }
 
@@ -37,11 +41,25 @@ export default function Home() {
     });
   }
 
-  // TODO: Replace with account preferences when logged in
-  // if (localStorage.getItem("nephthysHost")) {
-  //   router.push("/dashboard");
-  //   return <Loader />;
-  // } else {
+  if (
+    !searchParams.has("ignorePreference") &&
+    session?.preferences?.defaultHost
+  ) {
+    router.push(
+      `/dashboard/${GetNephthysNameFromHost(
+        session?.preferences?.defaultHost || "",
+      )}`,
+    );
+  }
+
+  if (
+    posthog.has_opted_in_capturing() &&
+    session?.preferences?.isOptedOutTracking
+  ) {
+    // <3
+    posthog.opt_out_capturing();
+  }
+
   return (
     <PageWrapper>
       <PageHeader breadcrumb="onboarding" title="Choose your channel.">
@@ -80,7 +98,7 @@ export default function Home() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p>{host.host.split("://")[1]}</p>
+              <p>{host.host}</p>
             </CardContent>
           </Card>
         ))}
@@ -92,8 +110,7 @@ export default function Home() {
           onClick={() => handleSelectHost()}
           disabled={selectedHost === ""}
         >
-          Enter {nephthysHosts.find((host) => host.host === selectedHost)?.name}{" "}
-          Dashboard
+          Enter {GetNephthysNameFromHost(selectedHost)} Dashboard
         </Button>
         {!session?.user && !isPending && (
           <Button

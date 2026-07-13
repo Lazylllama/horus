@@ -9,58 +9,81 @@ type FetchOptions = {
 export const nephthysHosts = [
   {
     name: "Stardance",
-    host: "https://stardance.nephthys.hackclub.com",
+    host: "stardance.nephthys.hackclub.com",
     channel: "C0AP0NMSP3P",
   },
   {
     name: "Help",
-    host: "https://help.nephthys.hackclub.com",
+    host: "help.nephthys.hackclub.com",
     channel: "C07TM4C0AQ5",
   },
   {
     name: "Nest",
-    host: "https://nephthys.cyteon.dev",
+    host: "nephthys.cyteon.dev",
     channel: "C097AL5AUH0",
   },
   {
     name: "Identity-Help",
-    host: "https://identity.nephthys.hackclub.com",
+    host: "identity.nephthys.hackclub.com",
     channel: "C092833JXKK",
   },
   {
     name: "Beest",
-    host: "https://beest.nephthys.hackclub.com",
+    host: "beest.nephthys.hackclub.com",
     channel: "C0AQ4T1CWH2",
   },
   {
     name: "Fallout",
-    host: "https://fallout.nephthys.hackclub.com",
+    host: "fallout.nephthys.hackclub.com",
     channel: "C0ACJ290090",
   },
   {
     name: "HCAI",
-    host: "https://hcai-nephthys.nirvaan.hackclub.app/",
+    host: "hcai-nephthys.nirvaan.hackclub.app",
     channel: "C0BDLT68ENN",
   },
-  // { name: "HCTG", host: "https://hctg.nephthys.hackclub.com" }, Borked?
+  // { name: "HCTG", host: "hctg.nephthys.hackclub.com" }, Borked?
 ];
+
+export function GetNephthysHostFromName(name: string): string | null {
+  return (
+    nephthysHosts.find((h) => h.name.toLowerCase() === name.toLowerCase())
+      ?.host || null
+  );
+}
+
+export function GetNephthysNameFromHost(host: string): string | null {
+  return (
+    nephthysHosts.find((h) => h.host.toLowerCase() === host.toLowerCase())
+      ?.name || null
+  );
+}
+
+export function GetNephthysChannelFromName(name: string): string | null {
+  return (
+    nephthysHosts.find((h) => h.name.toLowerCase() === name.toLowerCase())
+      ?.channel || null
+  );
+}
 
 export async function fetchNephthys<T>(
   path: string,
   host: string | null,
   options: FetchOptions = {},
 ): Promise<T> {
-  if (
-    !host ||
-    !Object.values(nephthysHosts).some((h) => h.host.toLowerCase() === host)
-  ) {
+  if (GetNephthysNameFromHost(host || "")) {
     throw new Error(`Invalid Nephthys host: ${host}`);
   }
 
-  const response = await fetch(`${host}${path}`, {
-    headers: { accept: "application/json" },
-    next: { revalidate: options.revalidate ?? 30 },
-  });
+  const response = await fetch(
+    `https://${
+      host?.includes(".") ? host : GetNephthysHostFromName(host || "")
+    }${path}`,
+    {
+      headers: { accept: "application/json" },
+      next: { revalidate: options.revalidate ?? 30 },
+    },
+  );
 
   if (!response.ok) {
     throw new Error(`Nephthys request failed: ${response.status}`);
@@ -72,12 +95,6 @@ export async function fetchNephthys<T>(
 export async function getStats(host: string | null, cachetEnrich = false) {
   if (!host) {
     throw new Error("Missing required parameter: host");
-  }
-
-  if (!host?.includes("https://")) {
-    host =
-      nephthysHosts.find((h) => h.name.toLowerCase() === host?.toLowerCase())
-        ?.host || "";
   }
 
   if (!cachetEnrich)
@@ -110,13 +127,7 @@ export async function getTickets(searchParams: URLSearchParams) {
     throw new Error("Missing required parameter: host");
   }
 
-  let host = params.get("host");
-
-  if (!host?.includes("https://")) {
-    host =
-      nephthysHosts.find((h) => h.name.toLowerCase() === host?.toLowerCase())
-        ?.host || "";
-  }
+  const host = params.get("host");
 
   if (!params.has("status")) params.set("status", "open");
   if (
@@ -136,13 +147,11 @@ export async function getTickets(searchParams: URLSearchParams) {
       statuses.map((status) => {
         const statusParams = new URLSearchParams(params);
         statusParams.set("status", status);
-        return fetchNephthys<TicketResponse | Ticket[]>(
-          `/api/tickets?${statusParams}`,
-          host,
-          {
-            revalidate: 30,
-          },
-        );
+        return fetchNephthys<
+          TicketResponse | Ticket[]
+        >(`/api/tickets?${statusParams}`, host, {
+          revalidate: 30,
+        });
       }),
     );
 

@@ -1,9 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { nephthysHosts } from "@/lib/nephthys";
 import useWindowDimensions from "@/lib/use-window-dimensions";
+import { useRouter } from "next/navigation";
 import { SettingsModal } from "./settings-modal";
 import { SiteBanner } from "./site-banner";
 import { ThemeSwitcher } from "./theme-switcher";
@@ -35,38 +35,15 @@ export default function Navbar() {
     authClient.signOut();
   }
 
-  function _handleHostChange(value: string | null) {
-    if (!value || !nephthysHosts.some((host) => host.host === value)) return;
-    const hostName = nephthysHosts.find((host) => host.host === value)?.name;
-    router.push(`/dashboard/${hostName}`);
-  }
-
   return (
     <div className="border-b bg-card">
       <SiteBanner />
       <div className="flex items-center justify-between mx-auto px-10 py-4 max-w-6xl">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="size-2.5 bg-primary"></div>
+            <div className="size-2.5 bg-primary" />
             <h1 className="text-lg font-semibold tracking-tight">nephthys</h1>
           </div>
-          {/* <Select
-            value={selectedHost}
-            onValueChange={(e) => handleHostChange(e as string)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select a channel">
-                {nephthysHosts.find((host) => host.host === selectedHost)?.name}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {nephthysHosts.map((host) => (
-                <SelectItem key={host.host} value={host.host}>
-                  {host.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select> */}
         </div>
         <div className="flex items-center gap-2">
           <ThemeSwitcher />

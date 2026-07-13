@@ -1,8 +1,5 @@
 "use client";
 
-import { ArrowUpRight } from "lucide-motion";
-import { useRouter } from "next/navigation";
-import { use, useEffect, useMemo, useState } from "react";
 import ErrorFallback from "@/app/error-boundary";
 import { Footer } from "@/components/footer";
 import { HelperLeaderboardWidget } from "@/components/helper-leaderboard";
@@ -20,12 +17,20 @@ import {
 import { TicketWidget } from "@/components/ticket-widget";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
-import { nephthysHosts } from "@/lib/nephthys";
-import { greet, SlackChannelLink } from "@/lib/utils";
+import {
+  GetNephthysChannelFromName,
+  GetNephthysHostFromName,
+  nephthysHosts,
+} from "@/lib/nephthys";
+import { SlackChannelLink, greet } from "@/lib/utils";
 import type {
   CachetEnrichedStats,
   Ticket as TicketType,
 } from "@/types/nephthys";
+import { ArrowUpRight } from "lucide-motion";
+import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
+import { use, useEffect, useMemo, useState } from "react";
 
 export default function Dashboard({
   params,
@@ -43,15 +48,12 @@ export default function Dashboard({
 
   const oldestTicket = useMemo(() => {
     const openTickets = ticketsData.filter((t) => t.status === "OPEN");
-    return openTickets.reduce(
-      (oldest, ticket) => {
-        if (!oldest || ticket.created_at < oldest.created_at) {
-          return ticket;
-        }
-        return oldest;
-      },
-      null as TicketType | null,
-    );
+    return openTickets.reduce((oldest, ticket) => {
+      if (!oldest || ticket.created_at < oldest.created_at) {
+        return ticket;
+      }
+      return oldest;
+    }, null as TicketType | null);
   }, [ticketsData]);
 
   useEffect(() => {
@@ -139,13 +141,19 @@ export default function Dashboard({
     return stats;
   }, [ticketsData, session?.user?.slack_id, isPending]);
 
+  if (!GetNephthysHostFromName(selectedHost)) router.push("/");
+
+  //? Make sure that preferences are applied
   if (
-    !nephthysHosts.some(
-      (h) => h.name.toLowerCase() === selectedHost.toLowerCase(),
-    )
-  ) {
-    router.push("/");
-  }
+    posthog.has_opted_in_capturing() &&
+    session?.preferences?.isOptedOutTracking
+  )
+    posthog.opt_out_capturing();
+  else if (
+    !posthog.has_opted_in_capturing() &&
+    !session?.preferences?.isOptedOutTracking
+  )
+    posthog.opt_in_capturing();
 
   function openSlackChannel(channelId: string) {
     window.open(SlackChannelLink(channelId), "");
@@ -180,12 +188,7 @@ export default function Dashboard({
                 size="lg"
                 variant="default"
                 onClick={() =>
-                  openSlackChannel(
-                    nephthysHosts.find(
-                      (h) =>
-                        h.name.toLowerCase() === selectedHost.toLowerCase(),
-                    )?.channel || "#",
-                  )
+                  openSlackChannel(GetNephthysChannelFromName(selectedHost))
                 }
               >
                 OPEN CHANNEL
@@ -195,20 +198,12 @@ export default function Dashboard({
           </PageHeader>
           <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4 py-2 px-6 min-h-66">
             <TicketWidget
-              slackChannel={
-                nephthysHosts.find(
-                  (h) => h.name.toLowerCase() === selectedHost.toLowerCase(),
-                )?.channel || "#"
-              }
+              slackChannel={GetNephthysChannelFromName(selectedHost)}
               ticket={oldestTicket}
               ticketWidgetType={"oldest"}
             />
             <TicketWidget
-              slackChannel={
-                nephthysHosts.find(
-                  (h) => h.name.toLowerCase() === selectedHost.toLowerCase(),
-                )?.channel || "#"
-              }
+              slackChannel={GetNephthysChannelFromName(selectedHost)}
               ticket={checkUpTicket}
               ticketWidgetType={"checkup"}
             />
@@ -221,21 +216,12 @@ export default function Dashboard({
                 <AssignedTicketsWidget
                   slackId={session.user.slack_id}
                   tickets={ticketsData}
-                  slackChannel={
-                    nephthysHosts.find(
-                      (h) =>
-                        h.name.toLowerCase() === selectedHost.toLowerCase(),
-                    )?.channel || "#"
-                  }
+                  slackChannel={GetNephthysChannelFromName(selectedHost)}
                 />
               )}
               <UnassignedTicketsWidget
                 tickets={ticketsData}
-                slackChannel={
-                  nephthysHosts.find(
-                    (h) => h.name.toLowerCase() === selectedHost.toLowerCase(),
-                  )?.channel || "#"
-                }
+                slackChannel={GetNephthysChannelFromName(selectedHost)}
               />
             </div>
           </div>

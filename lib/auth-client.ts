@@ -1,4 +1,5 @@
 import {
+  customSessionClient,
   genericOAuthClient,
   inferAdditionalFields,
 } from "better-auth/client/plugins";
@@ -11,5 +12,9 @@ export const authClient = createAuthClient({
     (process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL &&
       `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`) ||
     "http://localhost:3000",
-  plugins: [genericOAuthClient(), inferAdditionalFields<typeof auth>()],
+  plugins: [
+    genericOAuthClient(),
+    inferAdditionalFields<typeof auth>(),
+    customSessionClient<typeof auth>(),
+  ],
 });

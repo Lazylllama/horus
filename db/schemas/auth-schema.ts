@@ -15,6 +15,19 @@ export const user = pgTable("user", {
     .notNull(),
 });
 
+export const user_preferences = pgTable("user_preferences", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  isOptedOutTracking: boolean("is_opted_out_tracking").default(false).notNull(),
+  defaultHost: text("default_host"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
 export const session = pgTable(
   "session",
   {
@@ -93,23 +106,22 @@ export const verification = pgTable(
 //   }),
 // }));
 
-export const relations = defineRelations({
-  user: {
-    sessions: {
-      relation: "one-to-many",
-      target: "session",
-      foreignKey: "userId",
+export const relations = defineRelations(
+  { user, user_preferences, session, account, verification },
+  (r) => ({
+    user: {
+      sessions: r.many.session(),
+      accounts: r.many.account(),
+      preferences: r.one.user_preferences(),
     },
-    accounts: {
-      relation: "one-to-many",
-      target: "account",
-      foreignKey: "userId",
+    session: {
+      user: r.one.user({ from: r.session.userId, to: r.user.id }),
     },
-  },
-  session: {
-    user: { relation: "many-to-one", target: "user", foreignKey: "userId" },
-  },
-  account: {
-    user: { relation: "many-to-one", target: "user", foreignKey: "userId" },
-  },
-});
+    account: {
+      user: r.one.user({ from: r.account.userId, to: r.user.id }),
+    },
+    user_preferences: {
+      user: r.one.user({ from: r.user_preferences.userId, to: r.user.id }),
+    },
+  }),
+);
