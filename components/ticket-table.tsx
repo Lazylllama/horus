@@ -15,15 +15,15 @@ import { Card, CardContent, CardHeader } from "./ui/card";
 
 type Spec = Grid.GridSpec<Ticket>;
 
-const minute = 60,
-  hour = minute * 60,
-  day = hour * 24,
-  week = day * 7;
+const minute = 60;
+const hour = minute * 60;
+const day = hour * 24;
+const week = day * 7;
 
-function OpenRandomTicket(tickets: Ticket[], slackChannel: string) {
+function OpenRandomTicket(tickets: Ticket[], slackChannel: string | null) {
   const randomIndex = Math.floor(Math.random() * tickets.length);
   const ticketLink = SlackMessageLink(
-    slackChannel,
+    slackChannel || "N/A",
     tickets[randomIndex].message_ts,
   );
 
