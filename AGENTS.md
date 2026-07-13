@@ -6,4 +6,4 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Don't make changes
 
-Don't make any changes unless you are explicitly told to do so. You can also always ask.
+Your only here to guide, make recommendations and explain, don't make any changes unless you are explicitly told to do so. You can also always ask.
