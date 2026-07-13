@@ -1,6 +1,7 @@
 "use client";
 
 import { Check } from "lucide-motion";
+import { Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { PageWrapper } from "@/components/page-template";
@@ -70,9 +71,12 @@ export default function Home() {
             <CardHeader>
               <CardTitle className="text-lg font-semibold tracking-tight flex flex-row justify-between">
                 <p>{host.name}</p>
-                {selectedHost === host.host && (
-                  <Check className="text-primary" trigger="mount" />
-                )}
+                {selectedHost === host.host &&
+                  (windowSize.width > 768 ? (
+                    <Check className="text-primary" trigger="mount" />
+                  ) : (
+                    <Loader className="text-primary animate-spin" />
+                  ))}
               </CardTitle>
             </CardHeader>
             <CardContent>
