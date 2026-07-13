@@ -1,12 +1,12 @@
+import { authClient } from "@/lib/auth-client";
+import { SlackMessageLink, caughtUpText, cn } from "@/lib/utils";
+import type { Ticket } from "@/types/nephthys";
 import {
   ArrowUpRight,
   Check,
   Loader,
   MessageCircleWarning,
 } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
-import { caughtUpText, cn, SlackMessageLink } from "@/lib/utils";
-import type { Ticket } from "@/types/nephthys";
 import { Button } from "./ui/button";
 import { Card, CardAction, CardContent, CardHeader } from "./ui/card";
 
@@ -15,7 +15,7 @@ type TicketWidgetTypes = "oldest" | "checkup";
 interface TicketWidgetProps {
   ticket?: Ticket | null;
   ticketWidgetType: TicketWidgetTypes;
-  slackChannel: string;
+  slackChannel: string | null;
 }
 
 const TicketWidgetData: Record<TicketWidgetTypes, { title: string }> = {
@@ -40,8 +40,10 @@ export function TicketWidget({
     (1000 * 60 * 60 * 24);
 
   function openTicket() {
-    if (ticket) {
+    if (ticket && slackChannel) {
       window.location.href = SlackMessageLink(slackChannel, ticket.message_ts);
+    } else {
+      console.error("Unable to open ticket: missing channel or ticket data");
     }
   }
 
@@ -81,8 +83,8 @@ export function TicketWidget({
               isPending
                 ? "bg-orange-400/30 text-orange-400"
                 : !session?.user && ticketWidgetType === "checkup"
-                  ? "bg-destructive/30 text-destructive"
-                  : "bg-primary/30 text-primary",
+                ? "bg-destructive/30 text-destructive"
+                : "bg-primary/30 text-primary",
             )}
           >
             {isPending ? (
@@ -97,8 +99,8 @@ export function TicketWidget({
             {isPending
               ? "Loading..."
               : !session?.user && ticketWidgetType === "checkup"
-                ? "Sign in to see this"
-                : caughtUpTextConst}
+              ? "Sign in to see this"
+              : caughtUpTextConst}
           </h1>
         </CardContent>
       )}

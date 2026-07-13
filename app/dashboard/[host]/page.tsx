@@ -155,13 +155,14 @@ export default function Dashboard({
   )
     posthog.opt_in_capturing();
 
-  function openSlackChannel(channelId: string) {
+  function openSlackChannel(channelId: string | null) {
+    if (!channelId) return console.error("Channel ID is null?");
     window.open(SlackChannelLink(channelId), "");
   }
 
   function switchHost() {
     localStorage.removeItem("nephthysHost");
-    router.push("/");
+    router.push("/?ignorePreference=1");
   }
 
   return (
