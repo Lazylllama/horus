@@ -1,13 +1,13 @@
+import { LyteNyte } from "@/components/lytenyte-core";
+import useWindowDimensions from "@/lib/use-window-dimensions";
+import { SlackMessageLink, cn, relativeTime } from "@/lib/utils";
+import type { Ticket } from "@/types/nephthys";
 import {
   type Grid,
   useClientDataSource,
 } from "@1771technologies/lytenyte-core";
 import type { CellRendererParams } from "@1771technologies/lytenyte-core/types";
 import { ArrowUpRight, MailWarning } from "lucide-react";
-import { LyteNyte } from "@/components/lytenyte-core";
-import useWindowDimensions from "@/lib/use-window-dimensions";
-import { cn, relativeTime, SlackMessageLink } from "@/lib/utils";
-import type { Ticket } from "@/types/nephthys";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -36,7 +36,7 @@ function TicketTable({
   slackChannel,
 }: {
   tickets: Ticket[];
-  slackChannel: string;
+  slackChannel: string | null;
 }) {
   const ticketsData = useClientDataSource<Ticket>({
     data: tickets,
@@ -59,7 +59,7 @@ function TicketTable({
         if (!api.rowIsLeaf(row) || !row.data) return;
         return (
           <a
-            href={SlackMessageLink(slackChannel, row.data.message_ts)}
+            href={SlackMessageLink(slackChannel || "N/A", row.data.message_ts)}
             rel="noopener noreferrer"
             className="text-primary underline"
           >
@@ -103,7 +103,7 @@ export function AssignedTicketsWidget({
 }: {
   tickets: Ticket[];
   slackId: string;
-  slackChannel: string;
+  slackChannel: string | null;
 }) {
   const assignedTickets = tickets.filter(
     (ticket) => ticket.assigned_to?.slack_id === slackId,
@@ -130,7 +130,7 @@ export function UnassignedTicketsWidget({
   slackChannel,
 }: {
   tickets: Ticket[];
-  slackChannel: string;
+  slackChannel: string | null;
 }) {
   const unassignedTickets = tickets.filter((ticket) => !ticket.assigned_to);
 
@@ -225,8 +225,8 @@ function DateCellRenderer({ api, row }: CellRendererParams<Spec>) {
         delta < 2 * day
           ? "text-primary"
           : delta > week
-            ? "text-destructive"
-            : "text-orange-400",
+          ? "text-destructive"
+          : "text-orange-400",
         "flex flex-row justify-center items-center gap-1",
       )}
     >
