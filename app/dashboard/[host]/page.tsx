@@ -1,5 +1,9 @@
 "use client";
 
+import { ArrowUpRight } from "lucide-motion";
+import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
+import { use, useEffect, useMemo, useState } from "react";
 import ErrorFallback from "@/app/error-boundary";
 import { Footer } from "@/components/footer";
 import { HelperLeaderboardWidget } from "@/components/helper-leaderboard";
@@ -20,17 +24,12 @@ import { authClient } from "@/lib/auth-client";
 import {
   GetNephthysChannelFromName,
   GetNephthysHostFromName,
-  nephthysHosts,
 } from "@/lib/nephthys";
-import { SlackChannelLink, greet } from "@/lib/utils";
+import { greet, SlackChannelLink } from "@/lib/utils";
 import type {
   CachetEnrichedStats,
   Ticket as TicketType,
 } from "@/types/nephthys";
-import { ArrowUpRight } from "lucide-motion";
-import { useRouter } from "next/navigation";
-import posthog from "posthog-js";
-import { use, useEffect, useMemo, useState } from "react";
 
 export default function Dashboard({
   params,
@@ -48,12 +47,15 @@ export default function Dashboard({
 
   const oldestTicket = useMemo(() => {
     const openTickets = ticketsData.filter((t) => t.status === "OPEN");
-    return openTickets.reduce((oldest, ticket) => {
-      if (!oldest || ticket.created_at < oldest.created_at) {
-        return ticket;
-      }
-      return oldest;
-    }, null as TicketType | null);
+    return openTickets.reduce(
+      (oldest, ticket) => {
+        if (!oldest || ticket.created_at < oldest.created_at) {
+          return ticket;
+        }
+        return oldest;
+      },
+      null as TicketType | null,
+    );
   }, [ticketsData]);
 
   useEffect(() => {

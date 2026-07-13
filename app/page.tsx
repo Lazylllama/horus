@@ -1,5 +1,10 @@
 "use client";
 
+import { Check } from "lucide-motion";
+import { Loader } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import posthog from "posthog-js";
+import { useState } from "react";
 import { PageWrapper } from "@/components/page-template";
 import { LinkHref, PageDescription, PageHeader } from "@/components/text-types";
 import { Button } from "@/components/ui/button";
@@ -8,11 +13,6 @@ import { authClient } from "@/lib/auth-client";
 import { GetNephthysNameFromHost, nephthysHosts } from "@/lib/nephthys";
 import useWindowDimensions from "@/lib/use-window-dimensions";
 import { cn } from "@/lib/utils";
-import { Check } from "lucide-motion";
-import { Loader } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import posthog from "posthog-js";
-import { useState } from "react";
 import { updatePreferences } from "./actions/preferences";
 
 export default function Home() {

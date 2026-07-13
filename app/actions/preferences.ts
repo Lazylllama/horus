@@ -1,13 +1,10 @@
 "use server";
 
+import { headers } from "next/headers";
 import { db } from "@/db";
 import { user_preferences } from "@/db/schemas/auth-schema";
 import { auth } from "@/lib/auth";
-import {
-  GetNephthysHostFromName,
-  GetNephthysNameFromHost,
-} from "@/lib/nephthys";
-import { headers } from "next/headers";
+import { GetNephthysNameFromHost } from "@/lib/nephthys";
 
 export async function updatePreferences(input: {
   defaultHost?: string;

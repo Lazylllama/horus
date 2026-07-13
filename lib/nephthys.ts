@@ -147,11 +147,13 @@ export async function getTickets(searchParams: URLSearchParams) {
       statuses.map((status) => {
         const statusParams = new URLSearchParams(params);
         statusParams.set("status", status);
-        return fetchNephthys<
-          TicketResponse | Ticket[]
-        >(`/api/tickets?${statusParams}`, host, {
-          revalidate: 30,
-        });
+        return fetchNephthys<TicketResponse | Ticket[]>(
+          `/api/tickets?${statusParams}`,
+          host,
+          {
+            revalidate: 30,
+          },
+        );
       }),
     );
 

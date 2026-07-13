@@ -1,7 +1,6 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { nephthysHosts } from "@/lib/nephthys";
 import useWindowDimensions from "@/lib/use-window-dimensions";
 import { useRouter } from "next/navigation";
 import { SettingsModal } from "./settings-modal";
@@ -21,9 +20,7 @@ import {
 import { Skeleton } from "./ui/skeleton";
 
 export default function Navbar() {
-  const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
-  const _windowSize = useWindowDimensions();
 
   function handleLogin() {
     authClient.signIn.oauth2({

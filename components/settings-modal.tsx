@@ -1,5 +1,5 @@
-import { updatePreferences } from "@/app/actions/preferences";
 import posthog from "posthog-js";
+import { updatePreferences } from "@/app/actions/preferences";
 import { Button } from "./ui/button";
 import { CogIcon } from "./ui/cog";
 import {

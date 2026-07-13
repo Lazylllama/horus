@@ -1,12 +1,12 @@
-import { authClient } from "@/lib/auth-client";
-import { SlackMessageLink, caughtUpText, cn } from "@/lib/utils";
-import type { Ticket } from "@/types/nephthys";
 import {
   ArrowUpRight,
   Check,
   Loader,
   MessageCircleWarning,
 } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
+import { caughtUpText, cn, SlackMessageLink } from "@/lib/utils";
+import type { Ticket } from "@/types/nephthys";
 import { Button } from "./ui/button";
 import { Card, CardAction, CardContent, CardHeader } from "./ui/card";
 
@@ -83,8 +83,8 @@ export function TicketWidget({
               isPending
                 ? "bg-orange-400/30 text-orange-400"
                 : !session?.user && ticketWidgetType === "checkup"
-                ? "bg-destructive/30 text-destructive"
-                : "bg-primary/30 text-primary",
+                  ? "bg-destructive/30 text-destructive"
+                  : "bg-primary/30 text-primary",
             )}
           >
             {isPending ? (
@@ -99,8 +99,8 @@ export function TicketWidget({
             {isPending
               ? "Loading..."
               : !session?.user && ticketWidgetType === "checkup"
-              ? "Sign in to see this"
-              : caughtUpTextConst}
+                ? "Sign in to see this"
+                : caughtUpTextConst}
           </h1>
         </CardContent>
       )}

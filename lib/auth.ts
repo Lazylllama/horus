@@ -1,8 +1,8 @@
-import { db } from "@/db";
-import * as schema from "@/db/schemas/auth-schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { customSession, genericOAuth } from "better-auth/plugins";
+import { db } from "@/db";
+import * as schema from "@/db/schemas/auth-schema";
 
 const CACHET_HOST = process.env.CACHET_HOST || "https://cachet.hackclub.com";
 

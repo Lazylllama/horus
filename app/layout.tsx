@@ -1,7 +1,7 @@
-import { ThemeProvider } from "@/components/theme-provider";
-import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Lora, Space_Grotesk } from "next/font/google";
+import { ThemeProvider } from "@/components/theme-provider";
+import { cn } from "@/lib/utils";
 import "./globals.css";
 
 const loraHeading = Lora({
