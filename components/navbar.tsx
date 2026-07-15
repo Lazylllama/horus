@@ -1,8 +1,6 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import useWindowDimensions from "@/lib/use-window-dimensions";
-import { useRouter } from "next/navigation";
 import { SettingsModal } from "./settings-modal";
 import { SiteBanner } from "./site-banner";
 import { ThemeSwitcher } from "./theme-switcher";
