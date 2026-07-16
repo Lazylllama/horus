@@ -1,10 +1,10 @@
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { user } from "./auth-schema";
+import { organization } from "./auth-schema";
 
 export const instance = pgTable("instance", {
   id: text("id").primaryKey(),
   name: text("name"),
-  sponsorUserId: text("sponsor_user_id").references(() => user.id, {
+  organizationId: text("organization_id").references(() => organization.id, {
     onDelete: "cascade",
   }),
   createdAt: timestamp("created_at").defaultNow().notNull(),

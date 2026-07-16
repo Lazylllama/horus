@@ -21,19 +21,6 @@ export const user = pgTable("user", {
   slack_id: text("slack_id").notNull().unique(),
 });
 
-export const user_preferences = pgTable("user_preferences", {
-  userId: text("user_id")
-    .primaryKey()
-    .references(() => user.id, { onDelete: "cascade" }),
-  isOptedOutTracking: boolean("is_opted_out_tracking").default(false).notNull(),
-  defaultHost: text("default_host"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .defaultNow()
-    .$onUpdate(() => /* @__PURE__ */ new Date())
-    .notNull(),
-});
-
 export const session = pgTable(
   "session",
   {

@@ -1,8 +1,9 @@
-import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { customSession, genericOAuth } from "better-auth/plugins";
+import { betterAuth } from "better-auth/minimal";
+import { customSession, genericOAuth, organization } from "better-auth/plugins";
 import { db } from "@/db";
 import * as schema from "@/db/schemas/auth-schema";
+import { ac, admin, helper, jellyHelper, sponsor } from "./auth-permissions";
 
 const CACHET_HOST = process.env.CACHET_HOST || "https://cachet.hackclub.com";
 
@@ -82,6 +83,16 @@ export const auth = betterAuth({
           },
         },
       ],
+    }),
+    organization({
+      allowUserToCreateOrganization: false,
+      ac,
+      roles: {
+        helper,
+        jellyHelper,
+        admin,
+        sponsor,
+      },
     }),
     customSession(async ({ user, session }) => {
       const userPrefs = await db.query.user_preferences.findFirst({

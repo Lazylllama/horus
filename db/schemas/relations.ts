@@ -1,6 +1,9 @@
 import { defineRelations } from "drizzle-orm";
 import {
   account,
+  invitation,
+  member,
+  organization,
   session,
   user,
   user_preferences,
@@ -14,6 +17,9 @@ export const relations = defineRelations(
     user_preferences,
     session,
     account,
+    organization,
+    member,
+    invitation,
     verification,
     instance,
     nephthys_host,
@@ -25,6 +31,8 @@ export const relations = defineRelations(
       sessions: r.many.session(),
       accounts: r.many.account(),
       preferences: r.one.user_preferences(),
+      members: r.many.member(),
+      invitations: r.many.invitation(),
     },
     session: {
       user: r.one.user({ from: r.session.userId, to: r.user.id }),
@@ -35,12 +43,30 @@ export const relations = defineRelations(
     user_preferences: {
       user: r.one.user({ from: r.user_preferences.userId, to: r.user.id }),
     },
+    organization: {
+      members: r.many.member(),
+      invitations: r.many.invitation(),
+    },
+    member: {
+      organization: r.one.organization({
+        from: r.member.organizationId,
+        to: r.organization.id,
+      }),
+      user: r.one.user({ from: r.member.userId, to: r.user.id }),
+    },
+    invitation: {
+      organization: r.one.organization({
+        from: r.invitation.organizationId,
+        to: r.organization.id,
+      }),
+      user: r.one.user({ from: r.invitation.inviterId, to: r.user.id }),
+    },
 
     // instance-schema.ts
     instance: {
-      sponsor_user_id: r.one.user({
-        from: r.instance.sponsorUserId,
-        to: r.user.id,
+      organization_id: r.one.organization({
+        from: r.instance.organizationId,
+        to: r.organization.id,
       }),
       nephthys_host: r.one.nephthys_host({
         from: r.instance.id,
