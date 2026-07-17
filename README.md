@@ -1,5 +1,5 @@
 > [!CAUTION]
-> Nephthys Dashboard is becoming Horus dashboard to expand scope, stay tuned 👀
+> Nephthys Dashboard is becoming [Horus dashboard](https://github.com/Lazylllama/nephthys-dashboard/tree/db-controlled) to expand scope, stay tuned 👀
 <img width="1983" height="613" alt="Screenshot 2026-07-06 023632" src="https://github.com/user-attachments/assets/9fdf3358-973b-4e59-851f-bb5301c5aeb5" />
 
 # Nephthys Dashboard
