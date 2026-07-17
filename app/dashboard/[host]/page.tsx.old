@@ -20,7 +20,6 @@ import {
 } from "@/components/ticket-table";
 import { TicketWidget } from "@/components/ticket-widget";
 import { Button } from "@/components/ui/button";
-import { db } from "@/db";
 import { authClient } from "@/lib/auth-client";
 import {
   GetNephthysChannelFromName,
@@ -40,8 +39,6 @@ export default function Dashboard({
   const router = useRouter();
   const { host: selectedHost } = use(params);
   const { data: session, isPending } = authClient.useSession();
-  const [isLoading, setIsLoading] = useState(true);
-  const [nephthysHostname, setNephthysHostname] = useState<string | null>(null);
   const [checkUpTicket, _setCheckUpTicket] = useState<TicketType | null>(null);
   const [ticketsData, setTicketsData] = useState<TicketType[]>([]);
   const [closedTickets, setClosedTickets] = useState<TicketType[]>([]);
@@ -62,36 +59,16 @@ export default function Dashboard({
   }, [ticketsData]);
 
   useEffect(() => {
-    async function fetchNephthysData() {
-      if (!selectedHost) return;
-
-      const org = await db.query.organization.findFirst({
-        where: { slug: selectedHost },
-        with: {
-          instance: {
-            with: {
-              nephthys_host: true,
-            },
-          },
-        },
-      });
-
-      if (!org) {
-        throw new Error("Couldn't find organization by slug", {
-          cause: org,
-        });
-      }
-    }
     async function fetchTickets() {
-      if (!nephthysHostname) return;
+      if (!selectedHost) return;
 
       try {
         const ticketsResponse = fetch(
-          `/api/tickets?host=${nephthysHostname}&status=open,in_progress`,
+          `/api/tickets?host=${selectedHost}&status=open,in_progress`,
         );
 
         const closedTicketsResponse = fetch(
-          `/api/tickets?host=${nephthysHostname}&status=closed`,
+          `/api/tickets?host=${selectedHost}&status=closed`,
         );
 
         const ticketsResponseData = (await (
@@ -122,12 +99,12 @@ export default function Dashboard({
     }
 
     async function fetchStats() {
-      if (!nephthysHostname) return;
+      if (!selectedHost) return;
 
       try {
         // TODO: Optional cachet enrichment to improve load speeds cause this shit takes fucking ages
         const statsResponse = fetch(
-          `/api/stats?host=${nephthysHostname}&cachetEnriched=${false}`,
+          `/api/stats?host=${selectedHost}&cachetEnriched=${false}`,
         );
 
         const statsResponseData = (await (
@@ -142,7 +119,7 @@ export default function Dashboard({
 
     fetchTickets();
     fetchStats();
-  }, [selectedHost, isLoading]);
+  }, [selectedHost]);
 
   const userStats = useMemo(() => {
     const stats = {
@@ -151,7 +128,7 @@ export default function Dashboard({
       inProgress: 0,
     };
 
-    if (isPending || isLoading || !session?.user?.slack_id) return stats;
+    if (isPending || !session?.user?.slack_id) return stats;
 
     for (const ticket of ticketsData) {
       if (ticket.assigned_to?.slack_id === session.user.slack_id) {
@@ -164,9 +141,9 @@ export default function Dashboard({
     }
 
     return stats;
-  }, [ticketsData, session?.user?.slack_id, isPending, isLoading]);
+  }, [ticketsData, session?.user?.slack_id, isPending]);
 
-  // if (!GetNephthysHostFromName(selectedHost)) router.push("/");
+  if (!GetNephthysHostFromName(selectedHost)) router.push("/");
 
   //? Make sure that preferences are applied
   if (
@@ -186,6 +163,7 @@ export default function Dashboard({
   }
 
   function switchHost() {
+    localStorage.removeItem("nephthysHost");
     router.push("/?ignorePreference=1");
   }
 

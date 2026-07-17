@@ -46,6 +46,10 @@ export const relations = defineRelations(
     organization: {
       members: r.many.member(),
       invitations: r.many.invitation(),
+      instance: r.one.instance({
+        from: r.organization.id,
+        to: r.instance.organizationId,
+      }),
     },
     member: {
       organization: r.one.organization({

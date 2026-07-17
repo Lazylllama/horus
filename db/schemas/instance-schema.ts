@@ -19,7 +19,6 @@ export const nephthys_host = pgTable("nephthys_host", {
     .primaryKey()
     .references(() => instance.id, { onDelete: "cascade" })
     .unique(),
-  name: text("name").unique().notNull(),
   host: text("host").notNull(),
   slackChannel: text("slack_channel").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -34,6 +33,8 @@ export const jelly_host = pgTable("jelly_host", {
     .primaryKey()
     .references(() => instance.id, { onDelete: "cascade" })
     .unique(),
+  jellyApiKey: text("jelly_api_key"),
+  version: text("version").default("v1"), // TODO: Move to KMS?
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
