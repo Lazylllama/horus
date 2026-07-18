@@ -4,6 +4,7 @@ import { customSession, genericOAuth, organization } from "better-auth/plugins";
 import { db } from "@/db";
 import * as schema from "@/db/schemas/auth-schema";
 import { ac, admin, helper, jellyHelper, sponsor } from "./auth-permissions";
+import { redisSecondaryStorage } from "./auth-redis";
 
 const CACHET_HOST = process.env.CACHET_HOST || "https://cachet.hackclub.com";
 
@@ -26,6 +27,7 @@ export const auth = betterAuth({
   session: {
     cookieCache: { enabled: true, maxAge: 60 * 5 }, // 5 min
   },
+  secondaryStorage: redisSecondaryStorage,
   plugins: [
     genericOAuth({
       config: [

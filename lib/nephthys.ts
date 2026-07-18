@@ -5,6 +5,14 @@ type FetchOptions = {
   revalidate?: number;
 };
 
+export type NephthysTicketFilter = {
+  status?: string;
+  since?: string;
+  after?: string;
+  until?: string;
+  before?: string;
+};
+
 // TODO: Allow spaces or something
 export const nephthysHosts = [
   {
@@ -71,10 +79,6 @@ export async function fetchNephthys<T>(
   host: string | null,
   options: FetchOptions = {},
 ): Promise<T> {
-  if (GetNephthysNameFromHost(host || "")) {
-    throw new Error(`Invalid Nephthys host: ${host}`);
-  }
-
   const response = await fetch(
     `https://${
       host?.includes(".") ? host : GetNephthysHostFromName(host || "")
@@ -121,13 +125,20 @@ export async function getStats(host: string | null, cachetEnrich = false) {
   return enrichedStats;
 }
 
-export async function getTickets(searchParams: URLSearchParams) {
-  const params = new URLSearchParams(searchParams);
-  if (!params.has("host")) {
+export async function getTickets(
+  host: string | null,
+  filter?: NephthysTicketFilter,
+) {
+  if (!host) {
     throw new Error("Missing required parameter: host");
   }
 
-  const host = params.get("host");
+  const params = new URLSearchParams();
+  if (filter) {
+    Object.entries(filter).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+    });
+  }
 
   if (!params.has("status")) params.set("status", "open");
   if (

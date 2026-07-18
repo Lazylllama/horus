@@ -16,6 +16,7 @@ interface TicketWidgetProps {
   ticket?: Ticket | null;
   ticketWidgetType: TicketWidgetTypes;
   slackChannel: string | null;
+  isLoading: boolean;
 }
 
 const TicketWidgetData: Record<TicketWidgetTypes, { title: string }> = {
@@ -33,8 +34,9 @@ export function TicketWidget({
   ticket,
   ticketWidgetType,
   slackChannel,
+  isLoading,
 }: TicketWidgetProps) {
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session } = authClient.useSession();
   const ticketAge =
     (Date.now() - new Date(ticket?.created_at || "").getTime()) /
     (1000 * 60 * 60 * 24);
@@ -80,14 +82,14 @@ export function TicketWidget({
           <div
             className={cn(
               "rounded-full size-12 flex items-center justify-center",
-              isPending
+              isLoading
                 ? "bg-orange-400/30 text-orange-400"
                 : !session?.user && ticketWidgetType === "checkup"
                   ? "bg-destructive/30 text-destructive"
                   : "bg-primary/30 text-primary",
             )}
           >
-            {isPending ? (
+            {isLoading ? (
               <Loader className="animate-spin" />
             ) : !session?.user && ticketWidgetType === "checkup" ? (
               <MessageCircleWarning size={28} />
@@ -96,7 +98,7 @@ export function TicketWidget({
             )}
           </div>
           <h1 className="font-medium text-card-foreground text-lg">
-            {isPending
+            {isLoading
               ? "Loading..."
               : !session?.user && ticketWidgetType === "checkup"
                 ? "Sign in to see this"

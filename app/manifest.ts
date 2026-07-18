@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Nephthys Dashboard",
-    short_name: "Nephthys",
+    name: "Horus Dashboard",
+    short_name: "Horus",
     description: "keep track of your tickets",
     start_url: "/",
     display: "standalone",

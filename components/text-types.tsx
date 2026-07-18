@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 function PageBreadcrumb({ name }: { name: string }) {
   return (
     <p className="text-xs font-medium tracking-widest text-primary">
-      NEPHTHYS · {name.toUpperCase()}
+      HORUS · {name.toUpperCase()}
     </p>
   );
 }

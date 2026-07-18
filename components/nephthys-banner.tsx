@@ -1,11 +1,11 @@
 import { LinkHref } from "./text-types";
 
-export function NephthysBanner() {
+export function HorusBanner() {
   return (
     <>
       <div className="flex flex-row items-center justify-center md:gap-2 gap-1 mb-2">
         <div className="size-2.5 bg-primary"></div>
-        <h1 className="text-2xl md:text-4xl font-bold mb-1">nephthys</h1>
+        <h1 className="text-2xl md:text-4xl font-bold mb-1">horus</h1>
         <h1 className="text-2xl md:text-4xl font-heading font-light mb-1">
           dashboard
         </h1>

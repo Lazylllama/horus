@@ -5,6 +5,8 @@ import { Loader } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import posthog from "posthog-js";
 import { useState } from "react";
+import { Footer } from "@/components/footer";
+import Navbar from "@/components/navbar";
 import { PageWrapper } from "@/components/page-template";
 import { LinkHref, PageDescription, PageHeader } from "@/components/text-types";
 import { Button } from "@/components/ui/button";
@@ -61,68 +63,67 @@ export default function Home() {
   }
 
   return (
-    <PageWrapper>
-      <PageHeader breadcrumb="onboarding" title="Choose your channel.">
-        <PageDescription>
-          Pick whichever channel you want to see data for, you can very easily
-          change this later on. If you don't see your channel, please reach make
-          a PR to add it to the list or send me a{" "}
-          <LinkHref href="https://hackclub.enterprise.slack.com/team/U07F2QA059B">
-            DM on Slack
-          </LinkHref>
-          .
-        </PageDescription>
-      </PageHeader>
-      <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-4 py-7 px-6">
-        {nephthysHosts.map((host) => (
-          <Card
-            key={host.host}
-            onClick={() => handleHostCardClick(host.host)}
-            className={cn(
-              "cursor-pointer",
-              "border-2",
-              selectedHost === host.host
-                ? "border-primary bg-card-selected"
-                : "border-border",
-            )}
-          >
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold tracking-tight flex flex-row justify-between">
-                <p>{host.name}</p>
-                {selectedHost === host.host &&
-                  (windowSize.width > 768 ? (
-                    <Check className="text-primary" trigger="mount" />
-                  ) : (
-                    <Loader className="text-primary animate-spin" />
-                  ))}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>{host.host}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-      <div className="px-6 hidden md:block">
-        <Button
-          className="text-primary-foreground text-sm p-4"
-          size="lg"
-          onClick={() => handleSelectHost()}
-          disabled={selectedHost === ""}
-        >
-          Enter {GetNephthysNameFromHost(selectedHost)} Dashboard
-        </Button>
-        {!session?.user && !isPending && (
+    <>
+      <Navbar />
+      <PageWrapper variant="tight">
+        <PageHeader breadcrumb="directory" title="Hacker help, made simple.">
+          <PageDescription>
+            Horus centralizes your support channels and gives you a unified view
+            of your support operations.
+          </PageDescription>
+        </PageHeader>
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-4 py-7 px-6">
+          {nephthysHosts.map((host) => (
+            <Card
+              key={host.host}
+              onClick={() => handleHostCardClick(host.host)}
+              className={cn(
+                "cursor-pointer",
+                "border-2",
+                selectedHost === host.host
+                  ? "border-primary bg-card-selected"
+                  : "border-border",
+              )}
+            >
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold tracking-tight flex flex-row justify-between">
+                  <p>{host.name}</p>
+                  {selectedHost === host.host &&
+                    (windowSize.width > 768 ? (
+                      <Check className="text-primary" trigger="mount" />
+                    ) : (
+                      <Loader className="text-primary animate-spin" />
+                    ))}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>{host.host}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="px-6 hidden md:block">
           <Button
-            className="text-sm p-4 ml-2"
+            className="text-primary-foreground text-sm p-4"
             size="lg"
-            variant="ghost"
-            onClick={() => handleLogin()}
+            onClick={() => handleSelectHost()}
+            disabled={selectedHost === ""}
           >
-            Login with HCA&nbsp;→
+            Enter {GetNephthysNameFromHost(selectedHost)} Dashboard
           </Button>
-        )}
-      </div>
-    </PageWrapper>
+          {!session?.user && !isPending && (
+            <Button
+              className="text-sm p-4 ml-2"
+              size="lg"
+              variant="ghost"
+              onClick={() => handleLogin()}
+            >
+              Login with HCA&nbsp;→
+            </Button>
+          )}
+        </div>
+      </PageWrapper>
+      <Footer />
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { ArrowUpRight } from "lucide-motion";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { use, useEffect, useMemo, useState } from "react";
+import { GetNephthysHostnameFromSlug } from "@/app/actions/instance";
 import ErrorFallback from "@/app/error-boundary";
 import { Footer } from "@/components/footer";
 import { HelperLeaderboardWidget } from "@/components/helper-leaderboard";
@@ -20,12 +21,8 @@ import {
 } from "@/components/ticket-table";
 import { TicketWidget } from "@/components/ticket-widget";
 import { Button } from "@/components/ui/button";
-import { db } from "@/db";
 import { authClient } from "@/lib/auth-client";
-import {
-  GetNephthysChannelFromName,
-  GetNephthysHostFromName,
-} from "@/lib/nephthys";
+import { GetNephthysChannelFromName } from "@/lib/nephthys";
 import { greet, SlackChannelLink } from "@/lib/utils";
 import type {
   CachetEnrichedStats,
@@ -65,23 +62,19 @@ export default function Dashboard({
     async function fetchNephthysData() {
       if (!selectedHost) return;
 
-      const org = await db.query.organization.findFirst({
-        where: { slug: selectedHost },
-        with: {
-          instance: {
-            with: {
-              nephthys_host: true,
-            },
-          },
-        },
-      });
+      try {
+        const host = await GetNephthysHostnameFromSlug(selectedHost);
 
-      if (!org) {
-        throw new Error("Couldn't find organization by slug", {
-          cause: org,
-        });
+        if (typeof host === "string") {
+          setNephthysHostname(host);
+        } else if (host.error) {
+          throw new Error(host.error || "Failed to fetch Nephthys hostname");
+        }
+      } catch (err) {
+        setFetchError(err instanceof Error ? err : new Error(String(err)));
       }
     }
+
     async function fetchTickets() {
       if (!nephthysHostname) return;
 
@@ -118,6 +111,8 @@ export default function Dashboard({
         setClosedTickets(closedTicketsResponseData);
       } catch (err) {
         setFetchError(err instanceof Error ? err : new Error(String(err)));
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -140,9 +135,10 @@ export default function Dashboard({
       }
     }
 
+    fetchNephthysData();
     fetchTickets();
     fetchStats();
-  }, [selectedHost, isLoading]);
+  }, [selectedHost, nephthysHostname]);
 
   const userStats = useMemo(() => {
     const stats = {
@@ -151,7 +147,7 @@ export default function Dashboard({
       inProgress: 0,
     };
 
-    if (isPending || isLoading || !session?.user?.slack_id) return stats;
+    if (!session?.user?.slack_id) return stats;
 
     for (const ticket of ticketsData) {
       if (ticket.assigned_to?.slack_id === session.user.slack_id) {
@@ -164,9 +160,7 @@ export default function Dashboard({
     }
 
     return stats;
-  }, [ticketsData, session?.user?.slack_id, isPending, isLoading]);
-
-  // if (!GetNephthysHostFromName(selectedHost)) router.push("/");
+  }, [ticketsData, session?.user?.slack_id]);
 
   //? Make sure that preferences are applied
   if (
@@ -226,11 +220,13 @@ export default function Dashboard({
               slackChannel={GetNephthysChannelFromName(selectedHost)}
               ticket={oldestTicket}
               ticketWidgetType={"oldest"}
+              isLoading={isLoading}
             />
             <TicketWidget
               slackChannel={GetNephthysChannelFromName(selectedHost)}
               ticket={checkUpTicket}
               ticketWidgetType={"checkup"}
+              isLoading={isLoading}
             />
             <SurveyWidget />
           </div>
