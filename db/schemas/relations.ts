@@ -68,7 +68,7 @@ export const relations = defineRelations(
 
     // instance-schema.ts
     instance: {
-      organization_id: r.one.organization({
+      organization: r.one.organization({
         from: r.instance.organizationId,
         to: r.organization.id,
       }),

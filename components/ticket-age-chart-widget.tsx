@@ -6,18 +6,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { Ticket } from "@/types/nephthys";
+import type { TicketTTR, TimeDurations } from "@/types/nephthys";
 import { Card, CardContent, CardDescription, CardHeader } from "./ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
-
-type TimeDurations =
-  | "5 Minutes"
-  | "1 Hour"
-  | "12 Hours"
-  | "24 Hours"
-  | "4 Days"
-  | "7 Days"
-  | "More";
 
 const chartConfig: Record<TimeDurations, { label: string; color: string }> = {
   "5 Minutes": {
@@ -51,44 +42,24 @@ const chartConfig: Record<TimeDurations, { label: string; color: string }> = {
 };
 
 export function TicketAgeChartWidget({
-  closedTickets,
+  ticketsTTR,
 }: {
-  closedTickets: Ticket[];
+  ticketsTTR: TicketTTR | undefined;
 }) {
-  const chartData: { name: TimeDurations; value: number; fill: string }[] = [
-    { name: "5 Minutes", value: 0, fill: "var(--color-primary)" },
-    { name: "1 Hour", value: 0, fill: "var(--color-primary)" },
-    { name: "12 Hours", value: 0, fill: "var(--color-primary)" },
-    { name: "24 Hours", value: 0, fill: "var(--color-orange-400)" },
-    { name: "4 Days", value: 0, fill: "var(--color-orange-400)" },
-    { name: "7 Days", value: 0, fill: "var(--color-destructive)" },
-    { name: "More", value: 0, fill: "var(--color-destructive)" },
-  ];
-
-  // Calculate the age of each closed ticket and update the chart data
-  closedTickets.forEach((ticket) => {
-    if (!ticket.closed_at || !ticket.created_at) return;
-    const ageInMinutes =
-      (new Date(ticket.closed_at).getTime() -
-        new Date(ticket.created_at).getTime()) /
-      (1000 * 60);
-
-    if (ageInMinutes <= 5) {
-      chartData[0].value++;
-    } else if (ageInMinutes <= 60) {
-      chartData[1].value++;
-    } else if (ageInMinutes <= 720) {
-      chartData[2].value++;
-    } else if (ageInMinutes <= 1440) {
-      chartData[3].value++;
-    } else if (ageInMinutes <= 5760) {
-      chartData[4].value++;
-    } else if (ageInMinutes <= 10080) {
-      chartData[5].value++;
-    } else {
-      chartData[6].value++;
-    }
-  });
+  if (!ticketsTTR) {
+    return (
+      <Card className="grid-cols-1">
+        <CardHeader>
+          <h1 className="text-lg">Time-to-resolution</h1>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-center">
+            No data available for Time-to-Resolution (TTR)
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="grid-cols-1">
@@ -99,7 +70,7 @@ export function TicketAgeChartWidget({
         <ChartContainer config={chartConfig}>
           <BarChart
             accessibilityLayer
-            data={chartData}
+            data={ticketsTTR}
             layout="vertical"
             margin={{
               right: 36,

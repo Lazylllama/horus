@@ -16,7 +16,7 @@ export function HelperLeaderboardWidget({
   return (
     <Card className="grid-cols-1">
       <CardHeader>
-        <h1 className="text-lg">Helper leaderboard (half disabled)</h1>
+        <h1 className="text-lg">Helper leaderboard</h1>
       </CardHeader>
       <CardContent className="flex flex-col items-left gap-2">
         {helperData

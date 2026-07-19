@@ -14,32 +14,13 @@ export default function AdminPage() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
 
-  if (
-    !isPending &&
-    session?.user.id !== process.env.NEXT_PUBLIC_SUPER_ADMIN_ID
-  ) {
-    router.push("/");
-  }
-
-  async function handleCreateInstance() {
-    const data = await createInstance({
-      name: "Test Instance",
-      slug: "test",
-      sponsorId: "MTFR6CjAvgTxIMW4J56WHMIv33iyQtnQ",
-    });
-
-    alert(`Instance created, probably (check console)`);
-    console.log(data);
-  }
-
   return (
     <>
       <Navbar />
       <PageWrapper variant="tight">
-        <PageHeader title="Admin Dashboard⚡" breadcrumb="ADMIN">
+        <PageHeader title="Settings" breadcrumb="SETTINGS">
           <PageDescription>Hello shittings</PageDescription>
         </PageHeader>
-        <Button onClick={handleCreateInstance}>Create test instance</Button>
       </PageWrapper>
       <Footer />
     </>

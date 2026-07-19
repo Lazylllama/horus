@@ -1,57 +1,42 @@
 "use client";
 
-import { Check } from "lucide-motion";
-import { Loader } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronRight } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Footer } from "@/components/footer";
 import Navbar from "@/components/navbar";
 import { PageWrapper } from "@/components/page-template";
-import { LinkHref, PageDescription, PageHeader } from "@/components/text-types";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageDescription, PageHeader } from "@/components/text-types";
+import { Card, CardContent } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
-import { GetNephthysNameFromHost, nephthysHosts } from "@/lib/nephthys";
-import useWindowDimensions from "@/lib/use-window-dimensions";
 import { cn } from "@/lib/utils";
+import { GetInstances, type InstanceData } from "./actions/instance";
 import { updatePreferences } from "./actions/preferences";
 
 export default function Home() {
-  const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
-  const [selectedHost, setSelectedHost] = useState("");
-  const windowSize = useWindowDimensions();
-  const searchParams = useSearchParams();
+  const [instances, setInstances] = useState<InstanceData[]>();
 
-  function handleHostCardClick(host: string) {
-    setSelectedHost(host);
-    if (windowSize.width < 768) handleSelectHost(host);
-  }
+  useEffect(() => {
+    async function fetchInstances() {
+      const response = await GetInstances();
 
-  async function handleSelectHost(overrideHost?: string) {
-    const hostName = GetNephthysNameFromHost(overrideHost || selectedHost);
-    await updatePreferences({
-      defaultHost: overrideHost || selectedHost,
-    });
-    router.push(`/dashboard/${hostName}`);
-  }
+      if ("error" in response) {
+        throw new Error(response.error);
+      }
+
+      setInstances(response);
+    }
+
+    fetchInstances();
+  }, []);
 
   function handleLogin() {
     authClient.signIn.oauth2({
       providerId: "hack-club",
     });
-  }
-
-  if (
-    !searchParams.has("ignorePreference") &&
-    session?.preferences?.defaultHost
-  ) {
-    router.push(
-      `/dashboard/${GetNephthysNameFromHost(
-        session?.preferences?.defaultHost || "",
-      )}`,
-    );
   }
 
   if (
@@ -72,37 +57,45 @@ export default function Home() {
             of your support operations.
           </PageDescription>
         </PageHeader>
-        <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-4 py-7 px-6">
-          {nephthysHosts.map((host) => (
-            <Card
-              key={host.host}
-              onClick={() => handleHostCardClick(host.host)}
-              className={cn(
-                "cursor-pointer",
-                "border-2",
-                selectedHost === host.host
-                  ? "border-primary bg-card-selected"
-                  : "border-border",
-              )}
-            >
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold tracking-tight flex flex-row justify-between">
-                  <p>{host.name}</p>
-                  {selectedHost === host.host &&
-                    (windowSize.width > 768 ? (
-                      <Check className="text-primary" trigger="mount" />
-                    ) : (
-                      <Loader className="text-primary animate-spin" />
-                    ))}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>{host.host}</p>
-              </CardContent>
-            </Card>
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-4 py-7">
+          {/* {nephthysHosts.map((host) => (
+
+
+          ))} */}
+          {instances?.map((instance) => (
+            <InstanceCard
+              key={instance.instanceId}
+              name={instance.name}
+              slug={instance.slug}
+              stats={{
+                open: 670,
+                resolved: 450,
+                teamSize: 12,
+              }}
+              imageUrl={instance.imageUrl}
+              imageStandalone={instance.imageStandalone}
+            />
           ))}
+          <InstanceCard
+            name={"Stardance"}
+            slug={"Stardance"}
+            stats={{
+              open: 670,
+              resolved: 450,
+              teamSize: 12,
+            }}
+            imageUrl={"/StardanceBanner_Horus.png"}
+            imageStandalone={true}
+          />
+          <Card className="bg-transparent border-dashed border-2 ring-0 border-primary/60">
+            <CardContent className="p-4 justify-center items-center flex flex-col gap-4 h-full w-full px-12 font-semibold text-muted-foreground">
+              <button type="button" onClick={handleLogin}>
+                Login to see other instances you might have access to&nbsp;→
+              </button>
+            </CardContent>
+          </Card>
         </div>
-        <div className="px-6 hidden md:block">
+        {/* <div className="hidden md:block">
           <Button
             className="text-primary-foreground text-sm p-4"
             size="lg"
@@ -121,9 +114,118 @@ export default function Home() {
               Login with HCA&nbsp;→
             </Button>
           )}
-        </div>
+        </div> */}
       </PageWrapper>
       <Footer />
     </>
+  );
+}
+
+function InstanceCard({
+  name,
+  slug,
+  stats,
+  imageUrl,
+  imageStandalone,
+}: {
+  name: string;
+  slug: string;
+  stats: {
+    open: number;
+    resolved: number;
+    teamSize: number;
+  };
+  imageUrl?: string | null;
+  imageStandalone: boolean;
+}) {
+  const [isHovered, setIsHovered] = useState(false);
+  const router = useRouter();
+
+  async function handleSelectHost() {
+    await updatePreferences({
+      defaultHost: slug,
+    });
+    router.push(`/dashboard/${slug}`);
+  }
+
+  function handleMouseEnter() {
+    setIsHovered(true);
+  }
+
+  function handleMouseLeave() {
+    setIsHovered(false);
+  }
+
+  return (
+    <Card
+      key={slug}
+      onClick={() => handleSelectHost()}
+      className={cn("cursor-pointer border-2 p-0")}
+    >
+      <CardContent className="p-0 h-full">
+        <button
+          type="button"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          className={cn(
+            "relative overflow-hidden cursor-pointer aspect-video w-full h-full",
+          )}
+        >
+          {imageUrl && (
+            <Image
+              src={imageUrl}
+              alt={`${name} banner`}
+              loading="eager"
+              className="absolute top-0 left-0 object-cover"
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          )}
+          <div
+            className={cn(
+              imageUrl
+                ? "absolute bottom-0 left-0 w-full h-36 bg-linear-to-t from-black to-transparent p-4 flex flex-col"
+                : "w-full h-full p-4 flex flex-col",
+            )}
+          >
+            <div className="flex flex-col gap-2 mt-auto text-left">
+              {!imageStandalone && (
+                <h3 className="text-lg font-bold">{name}</h3>
+              )}
+              <div className="flex flex-row justify-between">
+                <div className="flex flex-row gap-4 text-sm text-muted-foreground">
+                  <div className="flex flex-col text-left">
+                    <p className="text-xl font-bold text-orange-400">
+                      {stats.open}
+                    </p>
+                    <p className="text-xs text-muted-foreground">OPEN</p>
+                  </div>
+                  <div className="flex flex-col text-left">
+                    <p className="text-xl font-bold text-primary">
+                      {stats.resolved}
+                    </p>
+                    <p className="text-xs text-muted-foreground">RESOLVED</p>
+                  </div>
+                  <div className="flex flex-col text-left">
+                    <p className="text-xl font-bold text-white">
+                      {stats.teamSize}
+                    </p>
+                    <p className="text-xs tracking-tight text-muted-foreground">
+                      HELPERS
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight
+                  className={cn(
+                    "absolute right-4 bottom-4 text-muted-foreground transition-all duration-300 ease-in-out",
+                    isHovered && "translate-x-1 text-primary",
+                  )}
+                />
+              </div>
+            </div>
+          </div>
+        </button>
+      </CardContent>
+    </Card>
   );
 }

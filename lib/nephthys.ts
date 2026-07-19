@@ -1,4 +1,10 @@
-import type { Stats, Ticket, TicketResponse } from "@/types/nephthys";
+import type {
+  CachetEnrichedStats,
+  Stats,
+  Ticket,
+  TicketTTR,
+  TimeDurations,
+} from "@/types/nephthys";
 import { getCachetUser } from "./cachet";
 
 type FetchOptions = {
@@ -96,13 +102,12 @@ export async function fetchNephthys<T>(
   return response.json() as Promise<T>;
 }
 
-export async function getStats(host: string | null, cachetEnrich = false) {
+export async function getStats(
+  host: string | null,
+): Promise<CachetEnrichedStats> {
   if (!host) {
     throw new Error("Missing required parameter: host");
   }
-
-  if (!cachetEnrich)
-    return fetchNephthys<Stats>("/api/stats_v2", host, { revalidate: 30 });
 
   const rawStats = await fetchNephthys<Stats>("/api/stats_v2", host, {
     revalidate: 30,
@@ -122,13 +127,10 @@ export async function getStats(host: string | null, cachetEnrich = false) {
     },
   };
 
-  return enrichedStats;
+  return enrichedStats as CachetEnrichedStats;
 }
 
-export async function getTickets(
-  host: string | null,
-  filter?: NephthysTicketFilter,
-) {
+export async function getTickets(host: string, filter?: NephthysTicketFilter) {
   if (!host) {
     throw new Error("Missing required parameter: host");
   }
@@ -139,7 +141,6 @@ export async function getTickets(
       if (value) params.set(key, value);
     });
   }
-
   if (!params.has("status")) params.set("status", "open");
   if (
     params.get("status") === "closed" &&
@@ -158,28 +159,78 @@ export async function getTickets(
       statuses.map((status) => {
         const statusParams = new URLSearchParams(params);
         statusParams.set("status", status);
-        return fetchNephthys<TicketResponse | Ticket[]>(
-          `/api/tickets?${statusParams}`,
-          host,
-          {
-            revalidate: 30,
-          },
-        );
+        return fetchNephthys<Ticket[]>(`/api/tickets?${statusParams}`, host, {
+          revalidate: 30,
+        });
       }),
     );
 
-    return results.flatMap((result) =>
-      Array.isArray(result) ? result : result.value,
-    );
+    return results.flat() as Ticket[];
   }
 
-  return fetchNephthys<TicketResponse | Ticket[]>(
+  const results = await fetchNephthys<Ticket[]>(
     `/api/tickets?${params}`,
     host,
     {
       revalidate: 30,
     },
   );
+
+  return results.flat() as Ticket[];
+}
+
+export async function getTicketsTTR(host: string) {
+  if (!host) {
+    throw new Error("Missing required parameter: host");
+  }
+
+  const params = new URLSearchParams();
+  params.set("status", "closed");
+  params.set("since", daysAgoIsoDate(365)); // last 365 days
+
+  const results = await fetchNephthys<Ticket[]>(
+    `/api/tickets?${params}`,
+    host,
+    {
+      revalidate: 30,
+    },
+  );
+
+  const chartData: { name: TimeDurations; value: number; fill: string }[] = [
+    { name: "5 Minutes", value: 0, fill: "var(--color-primary)" },
+    { name: "1 Hour", value: 0, fill: "var(--color-primary)" },
+    { name: "12 Hours", value: 0, fill: "var(--color-primary)" },
+    { name: "24 Hours", value: 0, fill: "var(--color-orange-400)" },
+    { name: "4 Days", value: 0, fill: "var(--color-orange-400)" },
+    { name: "7 Days", value: 0, fill: "var(--color-destructive)" },
+    { name: "More", value: 0, fill: "var(--color-destructive)" },
+  ];
+
+  //Calculate the age of each closed ticket and update the chart data
+  results.forEach((ticket) => {
+    if (!ticket.closed_at || !ticket.created_at) return;
+    const ageInMinutes =
+      (new Date(ticket.closed_at).getTime() -
+        new Date(ticket.created_at).getTime()) /
+      (1000 * 60);
+
+    if (ageInMinutes <= 5) {
+      chartData[0].value++;
+    } else if (ageInMinutes <= 60) {
+      chartData[1].value++;
+    } else if (ageInMinutes <= 720) {
+      chartData[2].value++;
+    } else if (ageInMinutes <= 1440) {
+      chartData[3].value++;
+    } else if (ageInMinutes <= 5760) {
+      chartData[4].value++;
+    } else if (ageInMinutes <= 10080) {
+      chartData[5].value++;
+    } else {
+      chartData[6].value++;
+    }
+  });
+  return chartData as TicketTTR;
 }
 
 function daysAgoIsoDate(days: number) {

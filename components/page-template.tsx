@@ -14,7 +14,7 @@ export function PageWrapper({
       className={cn(
         "max-w-6xl w-full mx-auto flex-1",
         variant === "tight"
-          ? "pt-8 sm:px-4 sm:pt-8"
+          ? "pt-8 px-10 sm:pt-8"
           : "px-4 pt-8 sm:px-24 sm:pt-16",
         variant === "center" &&
           "text-center flex flex-row items-center justify-center",

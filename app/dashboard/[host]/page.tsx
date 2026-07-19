@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { use, useEffect, useMemo, useState } from "react";
 import { GetNephthysHostnameFromSlug } from "@/app/actions/instance";
+import {
+  fetchNephthysStats,
+  fetchNephthysTickets,
+  fetchNephthysTicketsTTR,
+} from "@/app/actions/nephthys";
 import ErrorFallback from "@/app/error-boundary";
 import { Footer } from "@/components/footer";
 import { HelperLeaderboardWidget } from "@/components/helper-leaderboard";
@@ -26,6 +31,7 @@ import { GetNephthysChannelFromName } from "@/lib/nephthys";
 import { greet, SlackChannelLink } from "@/lib/utils";
 import type {
   CachetEnrichedStats,
+  TicketTTR,
   Ticket as TicketType,
 } from "@/types/nephthys";
 
@@ -41,7 +47,7 @@ export default function Dashboard({
   const [nephthysHostname, setNephthysHostname] = useState<string | null>(null);
   const [checkUpTicket, _setCheckUpTicket] = useState<TicketType | null>(null);
   const [ticketsData, setTicketsData] = useState<TicketType[]>([]);
-  const [closedTickets, setClosedTickets] = useState<TicketType[]>([]);
+  const [ticketsTTR, setTicketsTTR] = useState<TicketTTR>();
   const [statsData, setStatsData] = useState<CachetEnrichedStats>();
   const [fetchError, setFetchError] = useState<Error | null>(null);
 
@@ -59,17 +65,13 @@ export default function Dashboard({
   }, [ticketsData]);
 
   useEffect(() => {
-    async function fetchNephthysData() {
-      if (!selectedHost) return;
-
+    async function fetchNephthysHostname() {
       try {
-        const host = await GetNephthysHostnameFromSlug(selectedHost);
-
-        if (typeof host === "string") {
-          setNephthysHostname(host);
-        } else if (host.error) {
-          throw new Error(host.error || "Failed to fetch Nephthys hostname");
+        const hostname = await GetNephthysHostnameFromSlug(selectedHost);
+        if (!hostname) {
+          throw new Error("Nephthys hostname not found for the selected host");
         }
+        setNephthysHostname(hostname);
       } catch (err) {
         setFetchError(err instanceof Error ? err : new Error(String(err)));
       }
@@ -77,38 +79,33 @@ export default function Dashboard({
 
     async function fetchTickets() {
       if (!nephthysHostname) return;
-
       try {
-        const ticketsResponse = fetch(
-          `/api/tickets?host=${nephthysHostname}&status=open,in_progress`,
-        );
+        Promise.all([
+          fetchNephthysTickets({
+            nephthysHost: nephthysHostname,
+            filter: {
+              status: "OPEN,IN_PROGRESS",
+            },
+          }),
 
-        const closedTicketsResponse = fetch(
-          `/api/tickets?host=${nephthysHostname}&status=closed`,
-        );
+          fetchNephthysTicketsTTR({
+            nephthysHost: nephthysHostname,
+          }),
+        ])
+          .then(([ticketsResponse, ticketsTTRResponse]) => {
+            if ("error" in ticketsResponse) {
+              throw new Error(ticketsResponse.error);
+            }
+            if ("error" in ticketsTTRResponse) {
+              throw new Error(ticketsTTRResponse.error);
+            }
 
-        const ticketsResponseData = (await (
-          await ticketsResponse
-        ).json()) as TicketType[];
-
-        const closedTicketsResponseData = (await (
-          await closedTicketsResponse
-        ).json()) as TicketType[];
-
-        if (!Array.isArray(ticketsResponseData)) {
-          throw new Error("Invalid tickets data", {
-            cause: ticketsResponseData,
+            setTicketsData(ticketsResponse);
+            setTicketsTTR(ticketsTTRResponse);
+          })
+          .catch((err) => {
+            setFetchError(err instanceof Error ? err : new Error(String(err)));
           });
-        }
-
-        if (!Array.isArray(closedTicketsResponseData)) {
-          throw new Error("Invalid tickets data:", {
-            cause: closedTicketsResponseData,
-          });
-        }
-
-        setTicketsData(ticketsResponseData);
-        setClosedTickets(closedTicketsResponseData);
       } catch (err) {
         setFetchError(err instanceof Error ? err : new Error(String(err)));
       } finally {
@@ -118,24 +115,23 @@ export default function Dashboard({
 
     async function fetchStats() {
       if (!nephthysHostname) return;
-
       try {
         // TODO: Optional cachet enrichment to improve load speeds cause this shit takes fucking ages
-        const statsResponse = fetch(
-          `/api/stats?host=${nephthysHostname}&cachetEnriched=${false}`,
-        );
+        const stats = await fetchNephthysStats({
+          nephthysHost: nephthysHostname,
+        });
 
-        const statsResponseData = (await (
-          await statsResponse
-        ).json()) as CachetEnrichedStats;
+        if ("error" in stats) {
+          throw new Error(stats.error);
+        }
 
-        setStatsData(statsResponseData);
+        setStatsData(stats);
       } catch (err) {
         setFetchError(err instanceof Error ? err : new Error(String(err)));
       }
     }
 
-    fetchNephthysData();
+    fetchNephthysHostname();
     fetchTickets();
     fetchStats();
   }, [selectedHost, nephthysHostname]);
@@ -215,7 +211,7 @@ export default function Dashboard({
               </Button>
             </div>
           </PageHeader>
-          <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4 py-2 px-6 min-h-66">
+          <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4 py-2 min-h-66">
             <TicketWidget
               slackChannel={GetNephthysChannelFromName(selectedHost)}
               ticket={oldestTicket}
@@ -231,7 +227,7 @@ export default function Dashboard({
             <SurveyWidget />
           </div>
 
-          <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-4 py-2 px-6">
+          <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-4 py-2">
             <div className="col-span-3 flex flex-col gap-4">
               {session?.user && (
                 <AssignedTicketsWidget
@@ -247,8 +243,8 @@ export default function Dashboard({
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-4 py-2 px-6">
-            <TicketAgeChartWidget closedTickets={closedTickets} />
+          <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-4 py-2">
+            <TicketAgeChartWidget ticketsTTR={ticketsTTR} />
             <StatusChartWidget
               openCount={statsData?.all_time?.tickets_open || 0}
               inProgressCount={statsData?.all_time?.tickets_in_progress || 0}

@@ -76,7 +76,7 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "flex  flex-col gap-4 px-6 py-2",
+        "flex  flex-col gap-4 py-2",
         center ? "flex-col items-center justify-center" : "flex-1",
       )}
     >

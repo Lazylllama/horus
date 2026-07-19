@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { cn, userIsSuperAdmin } from "@/lib/utils";
 import { SettingsModal } from "./settings-modal";
@@ -105,12 +105,20 @@ export default function Navbar() {
         </div>
       </div>
       <div className="border-b bg-card">
-        <div className="max-w-6xl mx-auto flex flex-row items-center px-10 py-2">
+        <div className="max-w-6xl mx-auto flex flex-row items-center px-10">
           <PageButton path={"/"} displayName="Home" />
-          <PageButton path={"/dashboard"} displayName="Dashboard" />
+          <PageButton
+            path={`/dashboard/${session?.preferences?.defaultHost}`}
+            displayName="Dashboard"
+            disabled={!session?.preferences?.defaultHost}
+          />
           <PageButton path={"/dashboard/settings"} displayName="Settings" />
           {userIsSuperAdmin(session?.user.id) && (
-            <PageButton path={"/dashboard/admin"} displayName="⚡Admin" />
+            <PageButton
+              path={"/dashboard/admin"}
+              displayName="Admin"
+              superAdminOnly={true}
+            />
           )}
         </div>
       </div>
@@ -122,19 +130,25 @@ function PageButton({
   path,
   displayName,
   isPending,
+  disabled,
+  superAdminOnly = false,
 }: {
   path: string;
   displayName: string;
   isPending?: boolean;
+  disabled?: boolean;
+  superAdminOnly?: boolean;
 }) {
   const router = useRouter();
+  const pathName = usePathname();
+
   function isCurrentPage() {
-    if (path === "/dashboard") {
-      if (window.location.pathname.includes("settings")) return false;
-      if (window.location.pathname.includes("admin")) return false;
+    if (path === "/dashboard" && pathName.startsWith("/dashboard")) {
+      if (pathName.includes("settings")) return false;
+      if (pathName.includes("admin")) return false;
       return true;
     }
-    return window.location.pathname === path;
+    return pathName === path;
   }
 
   return (
@@ -142,11 +156,12 @@ function PageButton({
       type="button"
       onClick={() => router.push(path)}
       className={cn(
-        "border-b m-2",
-        "disabled:opacity-50 disabled:cursor-not-allowed",
-        isCurrentPage() && "border-b-primary",
+        "p-3 border-b-3 border-b-transparent text-muted-foreground",
+        "disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed",
+        isCurrentPage() && "border-b-primary text-foreground",
+        superAdminOnly && "border-b-3 border-restricted border-dashed",
       )}
-      disabled={isPending}
+      disabled={isPending || disabled}
     >
       {displayName}
     </button>
