@@ -16,7 +16,9 @@ interface TicketWidgetProps {
   ticket?: Ticket | null;
   ticketWidgetType: TicketWidgetTypes;
   slackChannel: string | null;
-  isLoading: boolean;
+  isLoading?: boolean;
+  ticketAgeMinutes?: number | null;
+  ticketThreadLink?: string | null;
 }
 
 const TicketWidgetData: Record<TicketWidgetTypes, { title: string }> = {
@@ -34,16 +36,21 @@ export function TicketWidget({
   ticket,
   ticketWidgetType,
   slackChannel,
-  isLoading,
+  isLoading = false,
+  ticketAgeMinutes,
+  ticketThreadLink,
 }: TicketWidgetProps) {
   const { data: session } = authClient.useSession();
-  const ticketAge =
-    (Date.now() - new Date(ticket?.created_at || "").getTime()) /
-    (1000 * 60 * 60 * 24);
+  const threadTimestamp =
+    ticket?.message_ts || ticketThreadLink?.split?.("/p")?.[1] || null;
+  const ticketAge = ticketAgeMinutes
+    ? ticketAgeMinutes / 60 / 24
+    : (Date.now() - new Date(ticket?.created_at || "").getTime()) /
+      (1000 * 60 * 60 * 24);
 
   function openTicket() {
-    if (ticket && slackChannel) {
-      window.location.href = SlackMessageLink(slackChannel, ticket.message_ts);
+    if (threadTimestamp && slackChannel) {
+      window.location.href = SlackMessageLink(slackChannel, threadTimestamp);
     } else {
       console.error("Unable to open ticket: missing channel or ticket data");
     }

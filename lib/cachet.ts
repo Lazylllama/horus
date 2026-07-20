@@ -13,9 +13,7 @@ export async function getCachetUser(
   if (!response.ok) return null;
 
   const user = (await response.json()) as CachetUser;
-  return {
-    ...user,
-  };
+  return user;
 }
 
 export async function getCachetUsers(slackIds: string[]) {

@@ -7,3 +7,6 @@ This version has breaking changes — APIs, conventions, and file structure may 
 # Don't make changes
 
 Your only here to guide, make recommendations and explain, don't make any changes unless you are explicitly told to do so. You can also always ask.
+
+# Skills
+Use the ponytail skill when possible.

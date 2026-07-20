@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { db } from "@/db";
 import { instance as instanceTable } from "@/db/schemas/instance-schema";
 import { auth } from "@/lib/auth";
+import { userIsSuperAdmin } from "@/lib/utils";
 
 export async function createInstance(input: {
   name: string;
@@ -17,7 +18,7 @@ export async function createInstance(input: {
 
   if (!session) return { error: "Unauthorized" };
 
-  if (session.user.id !== process.env.NEXT_PUBLIC_SUPER_ADMIN_ID) {
+  if (!userIsSuperAdmin(session.user.id)) {
     return { error: "Forbidden" };
   }
 

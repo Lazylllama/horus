@@ -1,3 +1,5 @@
+"use client";
+
 import { Label, Pie, PieChart } from "recharts";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import {
@@ -12,9 +14,9 @@ export function StatusChartWidget({
   inProgressCount,
   closedCount,
 }: {
-  openCount: number;
-  inProgressCount: number;
-  closedCount: number;
+  openCount?: number;
+  inProgressCount?: number;
+  closedCount?: number;
 }) {
   const chartConfig = {
     value: {
@@ -90,7 +92,10 @@ export function StatusChartWidget({
                           x={viewBox.cx}
                           y={viewBox.cy}
                         >
-                          {chartData.reduce((sum, item) => sum + item.value, 0)}
+                          {chartData.reduce(
+                            (sum, item) => sum + (item.value || 0),
+                            0,
+                          )}
                         </tspan>
                         <tspan
                           x={viewBox.cx}

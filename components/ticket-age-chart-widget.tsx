@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Bar,
   BarChart,
@@ -44,7 +46,7 @@ const chartConfig: Record<TimeDurations, { label: string; color: string }> = {
 export function TicketAgeChartWidget({
   ticketsTTR,
 }: {
-  ticketsTTR: TicketTTR | undefined;
+  ticketsTTR?: TicketTTR | undefined;
 }) {
   if (!ticketsTTR) {
     return (

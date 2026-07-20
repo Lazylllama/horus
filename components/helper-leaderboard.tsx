@@ -5,10 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Card, CardContent, CardHeader } from "./ui/card";
 
 export function HelperLeaderboardWidget({
-  helperData,
+  helperData = [],
   maxHelperCount = 8,
 }: {
-  helperData: CachetEnrichedHelper[];
+  helperData?: CachetEnrichedHelper[];
   maxHelperCount?: number;
 }) {
   const leaderTicketCount = Math.max(...helperData.map((h) => h.count));

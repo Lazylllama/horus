@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { db } from "@/db";
 import { auth } from "@/lib/auth";
+import { userIsSuperAdmin } from "@/lib/utils";
 
 export type InstanceData = {
   instanceId: string;
@@ -24,10 +25,7 @@ export async function GetInstances(
   if (!session) return { error: "Unauthorized" };
 
   // Only allow super admin to view private instances
-  if (
-    includePrivateInstances &&
-    session.user.id !== process.env.NEXT_PUBLIC_SUPER_ADMIN_ID
-  ) {
+  if (includePrivateInstances && !userIsSuperAdmin(session.user.id)) {
     return { error: "Forbidden" };
   }
 

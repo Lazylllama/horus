@@ -1,6 +1,5 @@
 "use client";
 import { ArrowUpRight, RotateCcw } from "lucide-react";
-
 import { unstable_catchError as catchError, type ErrorInfo } from "next/error";
 import { PageWrapper } from "@/components/page-template";
 import { PageDescription, PageHeader } from "@/components/text-types";

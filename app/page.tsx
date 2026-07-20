@@ -16,7 +16,7 @@ import { GetInstances, type InstanceData } from "./actions/instance";
 import { updatePreferences } from "./actions/preferences";
 
 export default function Home() {
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session } = authClient.useSession();
   const [instances, setInstances] = useState<InstanceData[]>();
 
   useEffect(() => {

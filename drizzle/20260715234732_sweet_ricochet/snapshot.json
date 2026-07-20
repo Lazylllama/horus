@@ -2,9 +2,7 @@
   "version": "8",
   "dialect": "postgres",
   "id": "27b00891-2824-4f8b-9101-d4d8116ff3a1",
-  "prevIds": [
-    "59bc060f-87f8-4ef9-a221-c55a1a0eb5cb"
-  ],
+  "prevIds": ["59bc060f-87f8-4ef9-a221-c55a1a0eb5cb"],
   "ddl": [
     {
       "isRlsEnabled": false,
@@ -821,14 +819,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "account_user_id_user_id_fkey",
@@ -838,14 +832,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "session_user_id_user_id_fkey",
@@ -855,14 +845,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "user_preferences_user_id_user_id_fkey",
@@ -872,14 +858,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "sponsor_user_id"
-      ],
+      "columns": ["sponsor_user_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "instances_sponsor_user_id_user_id_fkey",
@@ -889,14 +871,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "instance_id"
-      ],
+      "columns": ["instance_id"],
       "schemaTo": "public",
       "tableTo": "instance",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "jelly_host_instance_id_instance_id_fkey",
@@ -906,14 +884,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "instance_id"
-      ],
+      "columns": ["instance_id"],
       "schemaTo": "public",
       "tableTo": "instance",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "nephthys_host_instance_id_instance_id_fkey",
@@ -922,9 +896,7 @@
       "table": "nephthys_host"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "account_pkey",
       "schema": "public",
@@ -932,9 +904,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "session_pkey",
       "schema": "public",
@@ -942,9 +912,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "user_pkey",
       "schema": "public",
@@ -952,9 +920,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "nameExplicit": false,
       "name": "user_preferences_pkey",
       "schema": "public",
@@ -962,9 +928,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "verification_pkey",
       "schema": "public",
@@ -972,9 +936,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "instances_pkey",
       "schema": "public",
@@ -982,9 +944,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "instance_id"
-      ],
+      "columns": ["instance_id"],
       "nameExplicit": false,
       "name": "jelly_hosts_pkey",
       "schema": "public",
@@ -992,9 +952,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "instance_id"
-      ],
+      "columns": ["instance_id"],
       "nameExplicit": false,
       "name": "nephthys_host_pkey",
       "schema": "public",
@@ -1003,9 +961,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "token"
-      ],
+      "columns": ["token"],
       "nullsNotDistinct": false,
       "name": "session_token_key",
       "schema": "public",
@@ -1014,9 +970,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "email"
-      ],
+      "columns": ["email"],
       "nullsNotDistinct": false,
       "name": "user_email_key",
       "schema": "public",
@@ -1025,9 +979,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "slack_id"
-      ],
+      "columns": ["slack_id"],
       "nullsNotDistinct": false,
       "name": "user_slack_id_key",
       "schema": "public",
@@ -1036,9 +988,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "instance_id"
-      ],
+      "columns": ["instance_id"],
       "nullsNotDistinct": false,
       "name": "jelly_host_instance_id_key",
       "schema": "public",
@@ -1047,9 +997,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "instance_id"
-      ],
+      "columns": ["instance_id"],
       "nullsNotDistinct": false,
       "name": "nephthys_host_instance_id_key",
       "schema": "public",
@@ -1058,9 +1006,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "name"
-      ],
+      "columns": ["name"],
       "nullsNotDistinct": false,
       "name": "nephthys_hosts_name_key",
       "schema": "public",

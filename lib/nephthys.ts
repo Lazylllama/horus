@@ -118,11 +118,14 @@ export async function getStats(
     all_time: {
       ...rawStats.all_time,
       helpers_leaderboard: await Promise.all(
-        rawStats.all_time.helpers_leaderboard.map(async (helper) => ({
-          ...helper,
-          imageUrl: (await getCachetUser(helper.slack_id))?.imageUrl,
-          displayName: (await getCachetUser(helper.slack_id))?.displayName,
-        })),
+        rawStats.all_time.helpers_leaderboard.map(async (helper) => {
+          const cachetUser = await getCachetUser(helper.slack_id);
+          return {
+            ...helper,
+            imageUrl: cachetUser?.imageUrl,
+            displayName: cachetUser?.displayName,
+          };
+        }),
       ),
     },
   };
@@ -165,7 +168,7 @@ export async function getTickets(host: string, filter?: NephthysTicketFilter) {
       }),
     );
 
-    return results.flat() as Ticket[];
+    return results;
   }
 
   const results = await fetchNephthys<Ticket[]>(
@@ -176,7 +179,7 @@ export async function getTickets(host: string, filter?: NephthysTicketFilter) {
     },
   );
 
-  return results.flat() as Ticket[];
+  return results;
 }
 
 export async function getTicketsTTR(host: string) {
