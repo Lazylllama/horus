@@ -1,0 +1,1 @@
+ALTER TABLE "instance" ADD COLUMN "in_progress_tickets" text DEFAULT '0';

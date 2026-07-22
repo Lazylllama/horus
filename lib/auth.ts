@@ -8,6 +8,14 @@ import { redisSecondaryStorage } from "./auth-redis";
 
 const CACHET_HOST = process.env.CACHET_HOST || "https://cachet.hackclub.com";
 
+const additionalFields = {
+  slack_id: {
+    required: true,
+    type: "string",
+    unique: true,
+  },
+} as const;
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
@@ -16,13 +24,7 @@ export const auth = betterAuth({
     },
   }),
   user: {
-    additionalFields: {
-      slack_id: {
-        required: true,
-        type: "string",
-        unique: true,
-      },
-    },
+    additionalFields,
   },
   session: {
     cookieCache: { enabled: true, maxAge: 60 * 5 }, // 5 min
@@ -96,11 +98,18 @@ export const auth = betterAuth({
         sponsor,
       },
     }),
-    customSession(async ({ user, session }) => {
-      const userPrefs = await db.query.user_preferences.findFirst({
-        where: { userId: user.id },
-      });
-      return { user, session, preferences: userPrefs ?? null };
-    }),
+    customSession(
+      async ({ user, session }) => {
+        const userPrefs = await db.query.user_preferences.findFirst({
+          where: { userId: user.id },
+        });
+        return { user, session, preferences: userPrefs ?? null };
+      },
+      {
+        user: {
+          additionalFields,
+        },
+      },
+    ),
   ],
 });

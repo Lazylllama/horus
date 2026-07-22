@@ -1,45 +1,34 @@
 "use client";
 
 import { ArrowUpRight } from "lucide-react";
-import posthog from "posthog-js";
+import { use, useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import { GetNephthysChannelFromName } from "@/lib/nephthys";
 import { greet, SlackChannelLink } from "@/lib/utils";
 import { PageHeader } from "./text-types";
 import { Button } from "./ui/button";
 
 export default function DashboardHeader({
   description,
-  selectedHost,
+  params,
 }: {
   description: React.ReactNode;
-  selectedHost: string;
+  params: Promise<{ host: string }>;
 }) {
   const { data: session } = authClient.useSession();
+  const { host: selectedHost } = use(params);
+  const [greeting, setGreeting] = useState<string>("Hey there!");
+
+  useEffect(() => {
+    setGreeting(greet(session?.user?.name));
+  }, [session]);
 
   function OpenSlackChannel(channelId: string | null) {
     if (!channelId) return console.error("Channel ID is null?");
     window.open(SlackChannelLink(channelId), "");
   }
 
-  //? Make sure that preferences are applied
-  if (
-    posthog.has_opted_in_capturing() &&
-    session?.preferences?.isOptedOutTracking
-  )
-    posthog.opt_out_capturing();
-  else if (
-    !posthog.has_opted_in_capturing() &&
-    !session?.preferences?.isOptedOutTracking
-  )
-    posthog.opt_in_capturing();
-
   return (
-    <PageHeader
-      title={greet(session?.user?.name)}
-      breadcrumb={selectedHost}
-      justifyBetween
-    >
+    <PageHeader title={greeting} breadcrumb={selectedHost} justifyBetween>
       {description}
       <div className="flex flex-row gap-2">
         <Button size="lg" variant="outline" disabled>
@@ -48,9 +37,8 @@ export default function DashboardHeader({
         <Button
           size="lg"
           variant="default"
-          onClick={() =>
-            OpenSlackChannel(GetNephthysChannelFromName(selectedHost))
-          }
+          onClick={() => OpenSlackChannel("")}
+          disabled
         >
           OPEN CHANNEL
           <ArrowUpRight size={16} />

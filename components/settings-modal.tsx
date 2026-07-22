@@ -1,13 +1,11 @@
 "use client";
 
 import { LockKeyhole, UnlockKeyhole } from "lucide-react";
-import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import type React from "react";
 import { useState } from "react";
 import { updatePreferences } from "@/app/actions/preferences";
 import { authClient } from "@/lib/auth-client";
-import { GetNephthysNameFromHost, nephthysHosts } from "@/lib/nephthys";
 import { Button } from "./ui/button";
 import { CogIcon } from "./ui/cog";
 import {
@@ -17,18 +15,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
 
 export function SettingsModal() {
-  const [isLoading, setIsLoading] = useState(false);
-  const { data: session, isPending } = authClient.useSession();
-  const router = useRouter();
+  const { data: _session, isPending } = authClient.useSession();
+  const [isLoading, _setIsLoading] = useState(false);
 
   async function TogglePosthogCollection() {
     await updatePreferences({
@@ -44,31 +34,31 @@ export function SettingsModal() {
     window.location.reload();
   }
 
-  type selectItem = {
-    label: string;
-    value: string;
-  };
+  // type selectItem = {
+  //   label: string;
+  //   value: string;
+  // };
 
-  const nephthysHostsSelectItems: selectItem[] = nephthysHosts.map((host) => {
-    return {
-      label: host.name,
-      value: host.host,
-    };
-  });
+  // const nephthysHostsSelectItems: selectItem[] = nephthysHosts.map((host) => {
+  //   return {
+  //     label: host.name,
+  //     value: host.host,
+  //   };
+  // });
 
-  async function handleDefaultHostChange(value: string | null) {
-    if (!value || !GetNephthysNameFromHost(value)) return;
+  // async function handleDefaultHostChange(value: string | null) {
+  //   if (!value || !GetNephthysNameFromHost(value)) return;
 
-    setIsLoading(true);
+  //   setIsLoading(true);
 
-    await updatePreferences({
-      defaultHost: value,
-    });
+  //   await updatePreferences({
+  //     defaultHost: value,
+  //   });
 
-    router.push(
-      `/dashboard/${nephthysHosts.find((host) => host.host === value)?.name}`,
-    );
-  }
+  //   router.push(
+  //     `/dashboard/${nephthysHosts.find((host) => host.host === value)?.name}`,
+  //   );
+  // }
 
   return (
     <Dialog>
@@ -103,7 +93,7 @@ export function SettingsModal() {
               )}
             </Button>
           </SettingContainer>
-          <SettingContainer>
+          {/* <SettingContainer>
             <SettingHeader
               title="Default host"
               description="You are redirected to this host automatically instead of having to select your host every time."
@@ -124,7 +114,7 @@ export function SettingsModal() {
                 ))}
               </SelectContent>
             </Select>
-          </SettingContainer>
+          </SettingContainer> */}
         </div>
       </DialogContent>
     </Dialog>

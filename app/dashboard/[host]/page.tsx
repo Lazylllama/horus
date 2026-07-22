@@ -12,6 +12,7 @@ import { Footer } from "@/components/footer";
 import { HelperLeaderboardWidget } from "@/components/helper-leaderboard";
 import Navbar from "@/components/navbar";
 import { PageWrapper } from "@/components/page-template";
+import { PosthogPrefsLoader } from "@/components/posthog-prefs-loader";
 import { StatusChartWidget } from "@/components/status-chart-widget";
 import { SurveyWidget } from "@/components/survey-widget";
 import { PageDescriptionAuth } from "@/components/text-types";
@@ -22,7 +23,6 @@ import {
 } from "@/components/ticket-table";
 import { TicketWidget } from "@/components/ticket-widget";
 import { auth } from "@/lib/auth";
-import { GetNephthysChannelFromName } from "@/lib/nephthys";
 import type { Ticket as TicketType } from "@/types/nephthys";
 
 export default async function Dashboard({
@@ -30,26 +30,28 @@ export default async function Dashboard({
 }: {
   params: Promise<{ host: string }>;
 }) {
-  const { host: selectedHost } = await params;
-
   return (
     <>
       <Navbar />
+      <PosthogPrefsLoader />
       <ErrorFallback title={"ERR"}>
         <PageWrapper variant="tight">
-          <DashboardHeader
-            selectedHost={selectedHost}
-            description={
-              <PageDescriptionAuth
-                signedOutText="Sign in to see claimed tickets and more!"
-                signedInText={`${0} assigned to you · ${0}
-              unclaimed in the queue · ${0} in progress.`}
-              />
-            }
-          />
-
           <Suspense>
-            <TicketsSection selectedHost={selectedHost} />
+            <DashboardHeader
+              params={params}
+              description={
+                <Suspense>
+                  <PageDescriptionAuth
+                    signedOutText="Sign in to see claimed tickets and more!"
+                    userStats={true}
+                  />
+                </Suspense>
+              }
+            />
+          </Suspense>
+
+          <Suspense fallback={<TicketsSectionFallback />}>
+            <TicketsSection params={params} />
           </Suspense>
 
           <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-4 py-2">
@@ -62,7 +64,7 @@ export default async function Dashboard({
                 </>
               }
             >
-              <StatsSection selectedHost={selectedHost} />
+              <StatsSection params={params} />
             </Suspense>
           </div>
         </PageWrapper>
@@ -72,8 +74,14 @@ export default async function Dashboard({
   );
 }
 
-async function TicketsSection({ selectedHost }: { selectedHost: string }) {
-  const hostname = await GetNephthysHostnameFromSlug(selectedHost);
+async function TicketsSection({
+  params,
+}: {
+  params: Promise<{ host: string }>;
+}) {
+  const { host: selectedHost } = await params;
+  const { host: hostname, slackChannel } =
+    await GetNephthysHostnameFromSlug(selectedHost);
   if (!hostname)
     throw new Error("Nephthys hostname not found for the selected host");
 
@@ -81,18 +89,18 @@ async function TicketsSection({ selectedHost }: { selectedHost: string }) {
     headers: await headers(),
   });
 
-  const [tickets] = await Promise.all([
-    fetchNephthysTickets({
-      nephthysHost: hostname,
-      filter: {
-        status: "OPEN,IN_PROGRESS",
-      },
-    }),
-  ]);
+  const tickets = await fetchNephthysTickets({
+    nephthysHost: hostname,
+    filter: {
+      status: "OPEN,IN_PROGRESS",
+    },
+  });
+
   if ("error" in tickets) throw new Error(tickets.error);
 
   const userStats = { assigned: 0, unclaimed: 0, inProgress: 0 };
-  const slackId = session?.user?.slack_id; // TODO: RAHHHH
+  const slackId = session?.user?.slack_id;
+
   for (const ticket of tickets) {
     if (ticket.assigned_to?.slack_id === slackId) userStats.assigned++;
     else if (!ticket.assigned_to) userStats.unclaimed++;
@@ -113,12 +121,12 @@ async function TicketsSection({ selectedHost }: { selectedHost: string }) {
     <>
       <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4 py-2 min-h-66">
         <TicketWidget
-          slackChannel={GetNephthysChannelFromName(selectedHost)}
+          slackChannel={slackChannel}
           ticket={oldestTicket}
           ticketWidgetType={"oldest"}
         />
         <TicketWidget
-          slackChannel={GetNephthysChannelFromName(selectedHost)}
+          slackChannel={slackChannel}
           ticket={null} // TODO: Implement this
           ticketWidgetType={"checkup"}
         />
@@ -131,21 +139,38 @@ async function TicketsSection({ selectedHost }: { selectedHost: string }) {
             <AssignedTicketsWidget
               slackId={slackId}
               tickets={tickets}
-              slackChannel={GetNephthysChannelFromName(selectedHost)}
+              slackChannel={slackChannel}
             />
           )}
-          <UnassignedTicketsWidget
-            tickets={tickets}
-            slackChannel={GetNephthysChannelFromName(selectedHost)}
-          />
+          <UnassignedTicketsWidget tickets={tickets} slackChannel={slackChannel} />
         </div>
       </div>
     </>
   );
 }
 
-async function StatsSection({ selectedHost }: { selectedHost: string }) {
-  const hostname = await GetNephthysHostnameFromSlug(selectedHost);
+function TicketsSectionFallback() {
+  return (
+    <>
+      <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4 py-2 min-h-66">
+        <TicketWidget ticketWidgetType={"oldest"} isLoading />
+        <TicketWidget ticketWidgetType={"checkup"} isLoading />
+        <SurveyWidget />
+      </div>
+
+      <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-4 py-2">
+        <div className="col-span-3 flex flex-col gap-4">
+          <AssignedTicketsWidget />
+          <UnassignedTicketsWidget />
+        </div>
+      </div>
+    </>
+  );
+}
+
+async function StatsSection({ params }: { params: Promise<{ host: string }> }) {
+  const { host: selectedHost } = await params;
+  const { host: hostname } = await GetNephthysHostnameFromSlug(selectedHost);
   if (!hostname)
     throw new Error("Nephthys hostname not found for the selected host");
 

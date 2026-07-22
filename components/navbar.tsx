@@ -1,6 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { Suspense } from "react";
 import { authClient } from "@/lib/auth-client";
 import { cn, userIsSuperAdmin } from "@/lib/utils";
 import { SettingsModal } from "./settings-modal";
@@ -37,11 +39,19 @@ export default function Navbar() {
       <SiteBanner />
       <div className="border-b bg-card">
         <div className="flex items-center justify-between mx-auto px-10 py-4 max-w-6xl">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="size-2.5 bg-primary" />
-              <h1 className="text-lg font-semibold tracking-tight">horus</h1>
-            </div>
+          <div
+            className="flex items-center gap-4"
+            style={{ width: 333 / 4, height: 122 / 4 }}
+          >
+            <Image
+              src="/Horus_Transparent.png"
+              alt="Horus"
+              width={333}
+              height={122}
+              loading="eager"
+              priority
+              className="object-contain"
+            />
           </div>
           <div className="flex items-center gap-2">
             <ThemeSwitcher />
@@ -110,9 +120,9 @@ export default function Navbar() {
           <PageButton
             path={`/dashboard/${session?.preferences?.defaultHost}`}
             displayName="Dashboard"
-            disabled={!session?.preferences?.defaultHost}
+            disabled={!isPending && !session?.preferences?.defaultHost}
           />
-          <PageButton path={"/dashboard/settings"} displayName="Settings" />
+          {/* <PageButton path={"/dashboard/settings"} displayName="Settings" /> */}
           {userIsSuperAdmin(session?.user.id) && (
             <PageButton
               path={"/dashboard/admin"}
@@ -127,6 +137,37 @@ export default function Navbar() {
 }
 
 function PageButton({
+  path,
+  displayName,
+  superAdminOnly = false,
+  disabled = false,
+}: {
+  path: string;
+  displayName: string;
+  superAdminOnly?: boolean;
+  disabled?: boolean;
+}) {
+  const { data: session } = authClient.useSession();
+
+  if (superAdminOnly && !userIsSuperAdmin(session?.user.id)) {
+    return null;
+  }
+
+  return (
+    <Suspense
+      fallback={<FallbackPageButtonComponent displayName={displayName} />}
+    >
+      <PageButtonComponent
+        path={path}
+        displayName={displayName}
+        superAdminOnly={superAdminOnly}
+        disabled={disabled}
+      />
+    </Suspense>
+  );
+}
+
+function PageButtonComponent({
   path,
   displayName,
   isPending,
@@ -158,12 +199,20 @@ function PageButton({
       className={cn(
         "p-3 border-b-3 border-b-transparent text-muted-foreground",
         "disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed",
-        isCurrentPage() && "border-b-primary text-foreground",
+        isCurrentPage() && "border-b-primary text-foreground border-solid!",
         superAdminOnly && "border-b-3 border-restricted border-dashed",
       )}
       disabled={isPending || disabled}
     >
       {displayName}
     </button>
+  );
+}
+
+function FallbackPageButtonComponent({ displayName }: { displayName: string }) {
+  return (
+    <div className="p-3 border-b-3 border-b-transparent text-muted-foreground">
+      {displayName}
+    </div>
   );
 }

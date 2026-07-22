@@ -7,6 +7,9 @@ export const instance = pgTable("instance", {
   organizationId: text("organization_id").references(() => organization.id, {
     onDelete: "cascade",
   }),
+  openTickets: text("open_tickets").default("0"),
+  inProgressTickets: text("in_progress_tickets").default("0"),
+  resolvedTickets: text("resolved_tickets").default("0"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()

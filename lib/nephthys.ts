@@ -19,81 +19,15 @@ export type NephthysTicketFilter = {
   before?: string;
 };
 
-// TODO: Allow spaces or something
-export const nephthysHosts = [
-  {
-    name: "Stardance",
-    host: "stardance.nephthys.hackclub.com",
-    channel: "C0AP0NMSP3P",
-  },
-  {
-    name: "Help",
-    host: "help.nephthys.hackclub.com",
-    channel: "C07TM4C0AQ5",
-  },
-  {
-    name: "Nest",
-    host: "nephthys.cyteon.dev",
-    channel: "C097AL5AUH0",
-  },
-  {
-    name: "Identity-Help",
-    host: "identity.nephthys.hackclub.com",
-    channel: "C092833JXKK",
-  },
-  {
-    name: "Beest",
-    host: "beest.nephthys.hackclub.com",
-    channel: "C0AQ4T1CWH2",
-  },
-  {
-    name: "Fallout",
-    host: "fallout.nephthys.hackclub.com",
-    channel: "C0ACJ290090",
-  },
-  {
-    name: "HCAI",
-    host: "hcai-nephthys.nirvaan.hackclub.app",
-    channel: "C0BDLT68ENN",
-  },
-  // { name: "HCTG", host: "hctg.nephthys.hackclub.com" }, Borked?
-];
-
-export function GetNephthysHostFromName(name: string): string | null {
-  return (
-    nephthysHosts.find((h) => h.name.toLowerCase() === name.toLowerCase())
-      ?.host || null
-  );
-}
-
-export function GetNephthysNameFromHost(host: string): string | null {
-  return (
-    nephthysHosts.find((h) => h.host.toLowerCase() === host.toLowerCase())
-      ?.name || null
-  );
-}
-
-export function GetNephthysChannelFromName(name: string): string | null {
-  return (
-    nephthysHosts.find((h) => h.name.toLowerCase() === name.toLowerCase())
-      ?.channel || null
-  );
-}
-
 export async function fetchNephthys<T>(
   path: string,
   host: string | null,
   options: FetchOptions = {},
 ): Promise<T> {
-  const response = await fetch(
-    `https://${
-      host?.includes(".") ? host : GetNephthysHostFromName(host || "")
-    }${path}`,
-    {
-      headers: { accept: "application/json" },
-      next: { revalidate: options.revalidate ?? 30 },
-    },
-  );
+  const response = await fetch(`https://${host}${path}`, {
+    headers: { accept: "application/json" },
+    next: { revalidate: options.revalidate ?? 30 },
+  });
 
   if (!response.ok) {
     throw new Error(`Nephthys request failed: ${response.status}`);
@@ -168,7 +102,7 @@ export async function getTickets(host: string, filter?: NephthysTicketFilter) {
       }),
     );
 
-    return results;
+    return results.flat() as Ticket[];
   }
 
   const results = await fetchNephthys<Ticket[]>(

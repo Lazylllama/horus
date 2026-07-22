@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Nepthys Dashboard",
+  title: "Horus Dashboard",
   description: "keep track of your tickets",
 };
 

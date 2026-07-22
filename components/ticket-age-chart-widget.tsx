@@ -110,7 +110,7 @@ export function TicketAgeChartWidget({
           </BarChart>
         </ChartContainer>
         <CardDescription className="text-center mt-3">
-          *Based on all tickets since start
+          *Based on all tickets the past 365 days
         </CardDescription>
       </CardContent>
     </Card>

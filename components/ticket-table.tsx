@@ -22,10 +22,11 @@ const hour = minute * 60;
 const day = hour * 24;
 const week = day * 7;
 
-function OpenRandomTicket(tickets: Ticket[], slackChannel: string | null) {
+function OpenRandomTicket(tickets?: Ticket[], slackChannel?: string | null) {
+  if (!tickets || tickets.length === 0 || !slackChannel) return;
   const randomIndex = Math.floor(Math.random() * tickets.length);
   const ticketLink = SlackMessageLink(
-    slackChannel || "N/A",
+    slackChannel,
     tickets[randomIndex].message_ts,
   );
 
@@ -37,11 +38,11 @@ function TicketTable({
   tickets,
   slackChannel,
 }: {
-  tickets: Ticket[];
-  slackChannel: string | null;
+  tickets?: Ticket[];
+  slackChannel?: string | null;
 }) {
   const ticketsData = useClientDataSource<Ticket>({
-    data: tickets,
+    data: tickets || [],
   });
 
   const windowSize = useWindowDimensions();
@@ -85,7 +86,7 @@ function TicketTable({
     {
       id: "created_at",
       name: "Created",
-      width: tickets.length < 12 ? 163 : 150, // Fits perfect in max width (needs fix for longer lists)
+      width: tickets?.length || 0 < 12 ? 163 : 150, // Fits perfect in max width (needs fix for longer lists)
       cellRenderer: DateCellRenderer,
     },
   ];
@@ -103,13 +104,12 @@ export function AssignedTicketsWidget({
   slackId,
   slackChannel,
 }: {
-  tickets: Ticket[];
-  slackId: string;
-  slackChannel: string | null;
+  tickets?: Ticket[];
+  slackId?: string;
+  slackChannel?: string | null;
 }) {
-  const assignedTickets = tickets.filter(
-    (ticket) => ticket.assigned_to?.slack_id === slackId,
-  );
+  const assignedTickets =
+    tickets?.filter((ticket) => ticket.assigned_to?.slack_id === slackId) || [];
 
   return (
     <Card>
@@ -131,10 +131,11 @@ export function UnassignedTicketsWidget({
   tickets,
   slackChannel,
 }: {
-  tickets: Ticket[];
-  slackChannel: string | null;
+  tickets?: Ticket[];
+  slackChannel?: string | null;
 }) {
-  const unassignedTickets = tickets.filter((ticket) => !ticket.assigned_to);
+  const unassignedTickets =
+    tickets?.filter((ticket) => !ticket.assigned_to) || [];
 
   return (
     <Card>

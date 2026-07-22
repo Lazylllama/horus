@@ -9,10 +9,10 @@ export type InstanceData = {
   instanceId: string;
   organizationId: string;
   name: string;
-  // createdAt: Date;
-  // updatedAt: Date;
+  resolvedTickets: number;
+  openTickets: number;
+  inProgressTickets: number;
   slug: string;
-  imageStandalone: boolean;
   imageUrl: string | null;
   slackChannel: string | null;
   nephthysHostname: string | null;
@@ -21,12 +21,11 @@ export type InstanceData = {
 export async function GetInstances(
   includePrivateInstances: boolean = false,
 ): Promise<InstanceData[] | { error: string }> {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) return { error: "Unauthorized" };
-
   // Only allow super admin to view private instances
-  if (includePrivateInstances && !userIsSuperAdmin(session.user.id)) {
-    return { error: "Forbidden" };
+  if (includePrivateInstances) {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) return { error: "Unauthorized" };
+    if (!userIsSuperAdmin(session.user.id)) return { error: "Forbidden" };
   }
 
   const data = await db.query.instance.findMany({
@@ -51,10 +50,10 @@ export async function GetInstances(
       instanceId: instance.id,
       organizationId: instance.organizationId,
       name: instance.name,
-      // createdAt: instance.createdAt,
-      // updatedAt: instance.updatedAt,
+      resolvedTickets: parseInt(instance.resolvedTickets || "0", 10),
+      openTickets: parseInt(instance.openTickets || "0", 10),
+      inProgressTickets: parseInt(instance.inProgressTickets || "0", 10),
       slug: instance.organization.slug,
-      imageStandalone: false, // TODO: implement in instance shema
       imageUrl: instance.organization?.logo || null,
       slackChannel: instance.nephthys_host?.slackChannel || null,
       nephthysHostname: instance.nephthys_host?.host || null,
@@ -85,5 +84,8 @@ export async function GetNephthysHostnameFromSlug(slug: string) {
     });
   }
 
-  return org.instance?.nephthys_host.host;
+  return {
+    host: org.instance.nephthys_host.host,
+    slackChannel: org.instance.nephthys_host.slackChannel,
+  };
 }
