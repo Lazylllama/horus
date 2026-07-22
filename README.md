@@ -1,6 +1,7 @@
 > [!CAUTION]
 > Under heavy development
-<img width="1983" height="613" alt="Screenshot 2026-07-06 023632" src="https://github.com/user-attachments/assets/9fdf3358-973b-4e59-851f-bb5301c5aeb5" />
+
+<img width="1500" height="500" alt="Horus_Header" src="https://github.com/user-attachments/assets/71665e80-c9e0-494e-8f21-0dbfd001d0cd" />
 
 # Horus Dashboard
 Horus centralizes your support channels and gives you a **unified view** of your support operations, all with **blazing** speeds.
