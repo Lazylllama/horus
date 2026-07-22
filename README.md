@@ -17,5 +17,5 @@ Horus centralizes your support channels and gives you a **unified view** of your
 <br>
 
 ### Actual notes
-- Use router.prefetch for stuff later
-- Use redis as secondary storage because speed.
+- [] Use router.prefetch for stuff later
+- [x] Use redis as secondary storage because speed.
