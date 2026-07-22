@@ -9,6 +9,11 @@ import { getStats } from "@/lib/nephthys";
 export async function POST() {
   const headersData = await headers();
 
+  console.log(
+    headersData.forEach((value, key) => {
+      console.log(`${key}: ${value}`);
+    }),
+  );
   if (
     headersData.get("Upstash-Forward-Cron-Secret") !==
       `Bearer ${process.env.CRON_SECRET}` &&
