@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Lora, Space_Grotesk } from "next/font/google";
+import { Geist_Mono, Lora, Space_Grotesk } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import "./globals.css";
@@ -14,8 +14,13 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-sans",
 });
 
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
+
 export const metadata: Metadata = {
-  title: "Nepthys Dashboard",
+  title: "Horus Dashboard",
   description: "keep track of your tickets",
 };
 
@@ -36,6 +41,7 @@ export default function RootLayout({
         "text-foreground",
         spaceGrotesk.variable,
         loraHeading.variable,
+        geistMono.variable,
       )}
     >
       <body className="min-h-full flex flex-col">

@@ -1,10 +1,20 @@
-import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { customSession, genericOAuth } from "better-auth/plugins";
+import { betterAuth } from "better-auth/minimal";
+import { customSession, genericOAuth, organization } from "better-auth/plugins";
 import { db } from "@/db";
 import * as schema from "@/db/schemas/auth-schema";
+import { ac, admin, helper, jellyHelper, sponsor } from "./auth-permissions";
+import { redisSecondaryStorage } from "./auth-redis";
 
 const CACHET_HOST = process.env.CACHET_HOST || "https://cachet.hackclub.com";
+
+const additionalFields = {
+  slack_id: {
+    required: true,
+    type: "string",
+    unique: true,
+  },
+} as const;
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -14,17 +24,12 @@ export const auth = betterAuth({
     },
   }),
   user: {
-    additionalFields: {
-      slack_id: {
-        required: true,
-        type: "string",
-        unique: true,
-      },
-    },
+    additionalFields,
   },
   session: {
     cookieCache: { enabled: true, maxAge: 60 * 5 }, // 5 min
   },
+  secondaryStorage: redisSecondaryStorage,
   plugins: [
     genericOAuth({
       config: [
@@ -83,11 +88,28 @@ export const auth = betterAuth({
         },
       ],
     }),
-    customSession(async ({ user, session }) => {
-      const userPrefs = await db.query.user_preferences.findFirst({
-        where: { userId: user.id },
-      });
-      return { user, session, preferences: userPrefs ?? null };
+    organization({
+      allowUserToCreateOrganization: false,
+      ac,
+      roles: {
+        helper,
+        jellyHelper,
+        admin,
+        sponsor,
+      },
     }),
+    customSession(
+      async ({ user, session }) => {
+        const userPrefs = await db.query.user_preferences.findFirst({
+          where: { userId: user.id },
+        });
+        return { user, session, preferences: userPrefs ?? null };
+      },
+      {
+        user: {
+          additionalFields,
+        },
+      },
+    ),
   ],
 });

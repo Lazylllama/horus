@@ -75,6 +75,8 @@ export function SlackMessageLink(channelId: string, messageTs: string) {
 const KnownErrors: { [key: string]: string } = {
   "Invalid tickets data":
     "We were unable to fetch the data from the nephthys instance, please make sure that the host is working normally.",
+  "Couldn't find organization by slug":
+    "We were unable to find the organization by the slug, please make sure that the slug in the URL is correct and that the organization exists.",
 };
 
 export function GetErrorDescription(error: Error) {
@@ -82,4 +84,9 @@ export function GetErrorDescription(error: Error) {
     return KnownErrors[error.message];
   }
   return error.message;
+}
+
+// Currently only one person is super admin and rest is separated by org/instance
+export function userIsSuperAdmin(id: string | undefined): boolean {
+  return id === process.env.NEXT_PUBLIC_SUPER_ADMIN_ID;
 }

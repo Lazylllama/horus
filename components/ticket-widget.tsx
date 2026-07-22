@@ -1,9 +1,12 @@
+"use client";
+
 import {
   ArrowUpRight,
   Check,
   Loader,
   MessageCircleWarning,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { caughtUpText, cn, SlackMessageLink } from "@/lib/utils";
 import type { Ticket } from "@/types/nephthys";
@@ -15,7 +18,10 @@ type TicketWidgetTypes = "oldest" | "checkup";
 interface TicketWidgetProps {
   ticket?: Ticket | null;
   ticketWidgetType: TicketWidgetTypes;
-  slackChannel: string | null;
+  slackChannel?: string | null;
+  isLoading?: boolean;
+  ticketAgeMinutes?: number | null;
+  ticketThreadLink?: string | null;
 }
 
 const TicketWidgetData: Record<TicketWidgetTypes, { title: string }> = {
@@ -27,24 +33,63 @@ const TicketWidgetData: Record<TicketWidgetTypes, { title: string }> = {
   },
 };
 
-const caughtUpTextConst = caughtUpText();
-
 export function TicketWidget({
   ticket,
   ticketWidgetType,
   slackChannel,
+  isLoading = false,
+  ticketAgeMinutes,
+  ticketThreadLink,
 }: TicketWidgetProps) {
-  const { data: session, isPending } = authClient.useSession();
-  const ticketAge =
-    (Date.now() - new Date(ticket?.created_at || "").getTime()) /
-    (1000 * 60 * 60 * 24);
+  const { data: session, isPending: sessionPending } = authClient.useSession();
+  const loading = isLoading || sessionPending;
+  const threadTimestamp =
+    ticket?.message_ts || ticketThreadLink?.split?.("/p")?.[1] || null;
+
+  function getTicketAge() {
+    return ticketAgeMinutes
+      ? ticketAgeMinutes / 60 / 24
+      : (Date.now() - new Date(ticket?.created_at || "").getTime()) /
+          (1000 * 60 * 60 * 24);
+  }
+
+  const [caughtUp] = useState<string | null>(() =>
+    isLoading ? "Loading..." : caughtUpText(),
+  );
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   function openTicket() {
-    if (ticket && slackChannel) {
-      window.location.href = SlackMessageLink(slackChannel, ticket.message_ts);
+    if (threadTimestamp && slackChannel) {
+      window.location.href = SlackMessageLink(slackChannel, threadTimestamp);
     } else {
       console.error("Unable to open ticket: missing channel or ticket data");
     }
+  }
+
+  if (!mounted) {
+    return (
+      <Card className="min-h-72">
+        <CardHeader>
+          <h1 className="text-lg">
+            {TicketWidgetData[ticketWidgetType].title}
+          </h1>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center gap-4 justify-center my-auto">
+          <div
+            className={cn(
+              "rounded-full size-12 flex items-center justify-center",
+              "bg-orange-400/30 text-orange-400",
+            )}
+          >
+            <Loader className="animate-spin" />
+          </div>
+          <h1 className="font-medium text-card-foreground text-lg">
+            Loading...
+          </h1>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -58,10 +103,10 @@ export function TicketWidget({
             <h1
               className={cn(
                 "text-4xl font-bold",
-                (ticketAge || 0) > 6 ? "text-destructive" : "text-primary",
+                (getTicketAge() || 0) > 6 ? "text-destructive" : "text-primary",
               )}
             >
-              {(ticketAge || 0).toFixed(1)}d
+              {(getTicketAge() || 0).toFixed(1)}d
             </h1>
             <p className="text-muted-foreground">
               slow response · #{ticket?.id}
@@ -80,14 +125,14 @@ export function TicketWidget({
           <div
             className={cn(
               "rounded-full size-12 flex items-center justify-center",
-              isPending
+              loading
                 ? "bg-orange-400/30 text-orange-400"
                 : !session?.user && ticketWidgetType === "checkup"
                   ? "bg-destructive/30 text-destructive"
                   : "bg-primary/30 text-primary",
             )}
           >
-            {isPending ? (
+            {loading ? (
               <Loader className="animate-spin" />
             ) : !session?.user && ticketWidgetType === "checkup" ? (
               <MessageCircleWarning size={28} />
@@ -96,11 +141,11 @@ export function TicketWidget({
             )}
           </div>
           <h1 className="font-medium text-card-foreground text-lg">
-            {isPending
+            {loading
               ? "Loading..."
               : !session?.user && ticketWidgetType === "checkup"
                 ? "Sign in to see this"
-                : caughtUpTextConst}
+                : caughtUp}
           </h1>
         </CardContent>
       )}

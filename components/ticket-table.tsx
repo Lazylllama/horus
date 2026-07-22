@@ -1,13 +1,15 @@
-import { LyteNyte } from "@/components/lytenyte-core";
-import useWindowDimensions from "@/lib/use-window-dimensions";
-import { SlackMessageLink, cn, relativeTime } from "@/lib/utils";
-import type { Ticket } from "@/types/nephthys";
+"use client";
+
 import {
   type Grid,
   useClientDataSource,
 } from "@1771technologies/lytenyte-core";
 import type { CellRendererParams } from "@1771technologies/lytenyte-core/types";
 import { ArrowUpRight, MailWarning } from "lucide-react";
+import { LyteNyte } from "@/components/lytenyte-core";
+import useWindowDimensions from "@/lib/use-window-dimensions";
+import { cn, relativeTime, SlackMessageLink } from "@/lib/utils";
+import type { Ticket } from "@/types/nephthys";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -20,10 +22,11 @@ const hour = minute * 60;
 const day = hour * 24;
 const week = day * 7;
 
-function OpenRandomTicket(tickets: Ticket[], slackChannel: string | null) {
+function OpenRandomTicket(tickets?: Ticket[], slackChannel?: string | null) {
+  if (!tickets || tickets.length === 0 || !slackChannel) return;
   const randomIndex = Math.floor(Math.random() * tickets.length);
   const ticketLink = SlackMessageLink(
-    slackChannel || "N/A",
+    slackChannel,
     tickets[randomIndex].message_ts,
   );
 
@@ -35,11 +38,11 @@ function TicketTable({
   tickets,
   slackChannel,
 }: {
-  tickets: Ticket[];
-  slackChannel: string | null;
+  tickets?: Ticket[];
+  slackChannel?: string | null;
 }) {
   const ticketsData = useClientDataSource<Ticket>({
-    data: tickets,
+    data: tickets || [],
   });
 
   const windowSize = useWindowDimensions();
@@ -83,7 +86,7 @@ function TicketTable({
     {
       id: "created_at",
       name: "Created",
-      width: tickets.length < 12 ? 163 : 150, // Fits perfect in max width (needs fix for longer lists)
+      width: tickets?.length || 0 < 12 ? 163 : 150, // Fits perfect in max width (needs fix for longer lists)
       cellRenderer: DateCellRenderer,
     },
   ];
@@ -101,13 +104,12 @@ export function AssignedTicketsWidget({
   slackId,
   slackChannel,
 }: {
-  tickets: Ticket[];
-  slackId: string;
-  slackChannel: string | null;
+  tickets?: Ticket[];
+  slackId?: string;
+  slackChannel?: string | null;
 }) {
-  const assignedTickets = tickets.filter(
-    (ticket) => ticket.assigned_to?.slack_id === slackId,
-  );
+  const assignedTickets =
+    tickets?.filter((ticket) => ticket.assigned_to?.slack_id === slackId) || [];
 
   return (
     <Card>
@@ -129,10 +131,11 @@ export function UnassignedTicketsWidget({
   tickets,
   slackChannel,
 }: {
-  tickets: Ticket[];
-  slackChannel: string | null;
+  tickets?: Ticket[];
+  slackChannel?: string | null;
 }) {
-  const unassignedTickets = tickets.filter((ticket) => !ticket.assigned_to);
+  const unassignedTickets =
+    tickets?.filter((ticket) => !ticket.assigned_to) || [];
 
   return (
     <Card>
@@ -225,8 +228,8 @@ function DateCellRenderer({ api, row }: CellRendererParams<Spec>) {
         delta < 2 * day
           ? "text-primary"
           : delta > week
-          ? "text-destructive"
-          : "text-orange-400",
+            ? "text-destructive"
+            : "text-orange-400",
         "flex flex-row justify-center items-center gap-1",
       )}
     >

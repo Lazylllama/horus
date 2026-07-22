@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 function PageBreadcrumb({ name }: { name: string }) {
   return (
     <p className="text-xs font-medium tracking-widest text-primary">
-      NEPHTHYS · {name.toUpperCase()}
+      HORUS · {name.toUpperCase()}
     </p>
   );
 }
@@ -18,14 +18,22 @@ function PageTitle({ title }: { title: string }) {
 export function PageDescriptionAuth({
   signedInText,
   signedOutText,
+  userStats,
 }: {
-  signedInText: string;
+  signedInText?: string;
   signedOutText: string;
+  userStats: boolean;
 }) {
   const { data: session } = authClient.useSession();
+
+  // ${0} assigned to you · ${0}  unclaimed in the queue · ${0} in progress.
   return (
     <p className="text-md text-muted-foreground max-w-xl tracking-wide">
-      {session?.user ? signedInText : signedOutText}
+      {session?.user
+        ? userStats
+          ? `Welcome back :)`
+          : signedInText
+        : signedOutText}
     </p>
   );
 }
@@ -76,7 +84,7 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "flex  flex-col gap-4 px-6 py-2",
+        "flex  flex-col gap-4 py-2",
         center ? "flex-col items-center justify-center" : "flex-1",
       )}
     >
