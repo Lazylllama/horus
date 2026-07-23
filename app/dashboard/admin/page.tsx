@@ -17,17 +17,6 @@ export default async function AdminPage() {
     return redirect("/");
   }
 
-  async function handleCreateInstance() {
-    const data = await createInstance({
-      name: "Test Instance",
-      slug: "test",
-      sponsorId: "MTFR6CjAvgTxIMW4J56WHMIv33iyQtnQ",
-    });
-
-    alert(`Instance created, probably (check console)`);
-    console.log(data);
-  }
-
   return (
     <>
       <Navbar />
@@ -35,7 +24,6 @@ export default async function AdminPage() {
         <PageHeader title="Admin Dashboard⚡" breadcrumb="ADMIN">
           <PageDescription>Hello shittings</PageDescription>
         </PageHeader>
-        <Button onClick={handleCreateInstance}>Create test instance</Button>
       </PageWrapper>
       <Footer />
     </>
