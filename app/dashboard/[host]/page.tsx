@@ -142,7 +142,10 @@ async function TicketsSection({
               slackChannel={slackChannel}
             />
           )}
-          <UnassignedTicketsWidget tickets={tickets} slackChannel={slackChannel} />
+          <UnassignedTicketsWidget
+            tickets={tickets}
+            slackChannel={slackChannel}
+          />
         </div>
       </div>
     </>

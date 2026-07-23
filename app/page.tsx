@@ -9,7 +9,6 @@ import Navbar from "@/components/navbar";
 import { PageWrapper } from "@/components/page-template";
 import { PosthogPrefsLoader } from "@/components/posthog-prefs-loader";
 import { PageDescription, PageHeader } from "@/components/text-types";
-import { Skeleton } from "@/components/ui/skeleton";
 import { GetInstances } from "./actions/instance";
 
 export default async function Home() {
@@ -67,6 +66,7 @@ async function InstanceGrid() {
             inProgress: instance.inProgressTickets,
           }}
           imageUrl={instance.imageUrl && `/instances/${instance.imageUrl}`}
+          deprecated={instance.deprecated}
         />
       ))}
     </>

@@ -1,8 +1,8 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "97fb3e2a-27b5-4992-952c-f1d30fa04ba3",
-  "prevIds": ["59e641bd-3fc9-41bb-84fc-7c5be8e65297"],
+  "id": "45a85d78-fecf-4a73-a128-1947dc445c9f",
+  "prevIds": ["e88033f7-3d10-41be-8a93-8d00abe3a6a9"],
   "ddl": [
     {
       "isRlsEnabled": false,
@@ -910,7 +910,33 @@
       "default": "'0'",
       "generated": null,
       "identity": null,
+      "name": "in_progress_tickets",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "instance"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": "'0'",
+      "generated": null,
+      "identity": null,
       "name": "resolved_tickets",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "instance"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "name": "deprecated",
       "entityType": "columns",
       "schema": "public",
       "table": "instance"

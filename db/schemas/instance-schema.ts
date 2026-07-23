@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { organization } from "./auth-schema";
 
 export const instance = pgTable("instance", {
@@ -10,6 +10,7 @@ export const instance = pgTable("instance", {
   openTickets: text("open_tickets").default("0"),
   inProgressTickets: text("in_progress_tickets").default("0"),
   resolvedTickets: text("resolved_tickets").default("0"),
+  deprecated: boolean("deprecated").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()

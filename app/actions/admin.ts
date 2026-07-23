@@ -18,7 +18,7 @@ export async function createInstance(input: {
 
   if (!session) return { error: "Unauthorized" };
 
-  if (!userIsSuperAdmin(session.user.id)) {
+  if (!userIsSuperAdmin(session.user.role)) {
     return { error: "Forbidden" };
   }
 
@@ -47,4 +47,16 @@ export async function createInstance(input: {
   }
 
   return data;
+}
+
+async function _assertSuperAdmin() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) throw new Error("Unauthorized");
+
+  if (!userIsSuperAdmin(session.user.role)) {
+    throw new Error("Forbidden");
+  }
 }

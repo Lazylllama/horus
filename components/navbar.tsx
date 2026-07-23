@@ -84,7 +84,7 @@ export default function Navbar() {
                               <>
                                 <p className="font-extrabold">
                                   {session?.user.name}{" "}
-                                  {userIsSuperAdmin(session?.user.id) && "⚡"}
+                                  {userIsSuperAdmin(session?.user.role) && "⚡"}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
                                   {session?.user.slack_id}
@@ -123,7 +123,7 @@ export default function Navbar() {
             disabled={!isPending && !session?.preferences?.defaultHost}
           />
           {/* <PageButton path={"/dashboard/settings"} displayName="Settings" /> */}
-          {userIsSuperAdmin(session?.user.id) && (
+          {userIsSuperAdmin(session?.user.role) && (
             <PageButton
               path={"/dashboard/admin"}
               displayName="Admin"
@@ -149,7 +149,7 @@ function PageButton({
 }) {
   const { data: session } = authClient.useSession();
 
-  if (superAdminOnly && !userIsSuperAdmin(session?.user.id)) {
+  if (superAdminOnly && !userIsSuperAdmin(session?.user.role)) {
     return null;
   }
 

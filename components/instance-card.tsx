@@ -9,12 +9,14 @@ import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function InstanceCard({
   name,
   slug,
   stats,
   imageUrl,
+  deprecated,
 }: {
   name: string;
   slug: string;
@@ -24,6 +26,7 @@ export function InstanceCard({
     inProgress: number;
   };
   imageUrl?: string | null;
+  deprecated: boolean;
 }) {
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
@@ -43,11 +46,18 @@ export function InstanceCard({
     setIsHovered(false);
   }
 
+  function DeprecatedBadgeText() {
+    return <div className="text-lg font-bold text-orange-400">DEPRECATED</div>;
+  }
+
   return (
     <Card
       key={slug}
       onClick={() => handleSelectHost()}
-      className={cn("cursor-pointer border-2 p-0")}
+      className={cn(
+        "cursor-pointer border-2 p-0",
+        deprecated ? "border-orange-400" : "",
+      )}
     >
       <CardContent className="p-0 h-full">
         <button
@@ -67,6 +77,25 @@ export function InstanceCard({
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
+          )}
+          {deprecated && (
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <div className="text-lg font-bold text-orange-400">
+                    DEPRECATED
+                  </div>
+                } // Perfect spacing idk
+                className="absolute top-0 right-0 bg-card rounded-bl-md flex items-center justify-center px-2 py-1"
+              >
+                <div className="absolute top-0 right-0 bg-card rounded-bl-md flex items-center justify-center px-2 py-1">
+                  <DeprecatedBadgeText />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                This instance is deprecated and can be removed at any time.
+              </TooltipContent>
+            </Tooltip>
           )}
           <div
             className={cn(
@@ -103,7 +132,8 @@ export function InstanceCard({
                 <ChevronRight
                   className={cn(
                     "absolute right-4 bottom-4 text-muted-foreground transition-all duration-300 ease-in-out",
-                    isHovered && "translate-x-1 text-primary",
+                    isHovered &&
+                      `translate-x-1 ${deprecated ? "text-orange-400" : "text-primary"}`,
                   )}
                 />
               </div>

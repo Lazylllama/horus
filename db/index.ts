@@ -1,5 +1,3 @@
-import "server-only"; // dont look here okay :(
-
 import { upstashCache } from "drizzle-orm/cache/upstash";
 import { drizzle } from "drizzle-orm/neon-http";
 import { relations } from "./schemas/relations";

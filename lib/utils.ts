@@ -86,7 +86,6 @@ export function GetErrorDescription(error: Error) {
   return error.message;
 }
 
-// Currently only one person is super admin and rest is separated by org/instance
-export function userIsSuperAdmin(id: string | undefined): boolean {
-  return id === process.env.NEXT_PUBLIC_SUPER_ADMIN_ID;
+export function userIsSuperAdmin(role: string | null | undefined): boolean {
+  return role === "admin";
 }

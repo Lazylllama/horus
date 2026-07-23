@@ -16,6 +16,7 @@ export type InstanceData = {
   imageUrl: string | null;
   slackChannel: string | null;
   nephthysHostname: string | null;
+  deprecated: boolean;
 };
 
 export async function GetInstances(
@@ -25,7 +26,7 @@ export async function GetInstances(
   if (includePrivateInstances) {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) return { error: "Unauthorized" };
-    if (!userIsSuperAdmin(session.user.id)) return { error: "Forbidden" };
+    if (!userIsSuperAdmin(session.user.role)) return { error: "Forbidden" };
   }
 
   const data = await db.query.instance.findMany({
@@ -57,6 +58,7 @@ export async function GetInstances(
       imageUrl: instance.organization?.logo || null,
       slackChannel: instance.nephthys_host?.slackChannel || null,
       nephthysHostname: instance.nephthys_host?.host || null,
+      deprecated: instance.deprecated || false,
     };
   });
 }

@@ -3,6 +3,7 @@ import { Geist_Mono, Lora, Space_Grotesk } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import "./globals.css";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const loraHeading = Lora({
   subsets: ["latin"],
@@ -51,7 +52,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <TooltipProvider>{children}</TooltipProvider>
         </ThemeProvider>
       </body>
     </html>
