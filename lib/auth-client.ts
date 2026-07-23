@@ -1,4 +1,5 @@
 import {
+  adminClient,
   customSessionClient,
   genericOAuthClient,
   inferAdditionalFields,
@@ -16,6 +17,7 @@ export const authClient = createAuthClient({
   plugins: [
     genericOAuthClient(),
     organizationClient(),
+    adminClient(),
     inferAdditionalFields<typeof auth>(),
     customSessionClient<typeof auth>(),
   ],

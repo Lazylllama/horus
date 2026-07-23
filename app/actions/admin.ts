@@ -1,62 +1,199 @@
 "use server";
 
+import { eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { db } from "@/db";
-import { instance as instanceTable } from "@/db/schemas/instance-schema";
+import { member, organization, user } from "@/db/schemas/auth-schema";
+import {
+  instance as instanceTable,
+  nephthys_host,
+} from "@/db/schemas/instance-schema";
 import { auth } from "@/lib/auth";
 import { userIsSuperAdmin } from "@/lib/utils";
+
+async function assertSuperAdmin() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) throw new Error("Unauthorized");
+  if (!userIsSuperAdmin(session.user.role)) throw new Error("Forbidden");
+  return session;
+}
+
+function revalidate() {
+  revalidatePath("/dashboard/admin");
+}
+
+// --- Instances / orgs ---
 
 export async function createInstance(input: {
   name: string;
   slug: string;
   sponsorId: string;
+  host: string;
+  slackChannel: string;
 }) {
-  // TODO: add winston logdrain stuff
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  await assertSuperAdmin();
 
-  if (!session) return { error: "Unauthorized" };
-
-  if (!userIsSuperAdmin(session.user.role)) {
-    return { error: "Forbidden" };
-  }
-
-  const data = await auth.api.createOrganization({
+  const org = await auth.api.createOrganization({
     body: {
       name: input.name,
       slug: input.slug,
       userId: input.sponsorId,
-      // TODO: logo: input.logo
       keepCurrentActiveOrganization: false,
     },
   });
+  if (!org?.id) throw new Error("Failed to create organization");
 
-  if (!data || !data.id) {
-    return { error: "Failed to create organization" };
-  }
-
-  const instance = await db.insert(instanceTable).values({
-    id: crypto.randomUUID(),
-    name: input.name,
-    organizationId: data.id,
+  const instanceId = crypto.randomUUID();
+  await db
+    .insert(instanceTable)
+    .values({ id: instanceId, name: input.name, organizationId: org.id });
+  await db.insert(nephthys_host).values({
+    instanceId,
+    host: input.host,
+    slackChannel: input.slackChannel,
   });
 
-  if (!instance) {
-    return { error: "Failed to insert instance after organization creation." };
-  }
-
-  return data;
+  revalidate();
 }
 
-async function _assertSuperAdmin() {
-  const session = await auth.api.getSession({
+export async function updateInstance(
+  instanceId: string,
+  data: { name?: string; deprecated?: boolean },
+) {
+  await assertSuperAdmin();
+  await db
+    .update(instanceTable)
+    .set(data)
+    .where(eq(instanceTable.id, instanceId));
+  revalidate();
+}
+
+export async function updateNephthysHost(
+  instanceId: string,
+  data: { host: string; slackChannel: string },
+) {
+  await assertSuperAdmin();
+  await db
+    .insert(nephthys_host)
+    .values({ instanceId, ...data })
+    .onConflictDoUpdate({ target: nephthys_host.instanceId, set: data });
+  revalidate();
+}
+
+export async function updateOrganization(
+  organizationId: string,
+  data: { name?: string; slug?: string; logo?: string | null },
+) {
+  await assertSuperAdmin();
+  // Direct db: a global super-admin isn't a member of every org, so
+  // auth.api.updateOrganization's org-permission check would reject them.
+  await db
+    .update(organization)
+    .set(data)
+    .where(eq(organization.id, organizationId));
+  revalidate();
+}
+
+export async function deleteInstance(organizationId: string) {
+  await assertSuperAdmin();
+  // Deleting the org cascades to instance/member/invitation/nephthys_host
+  // via existing onDelete: "cascade" FKs.
+  await db.delete(organization).where(eq(organization.id, organizationId));
+  revalidate();
+}
+
+// --- Org membership ---
+
+export async function searchUsers(query: string) {
+  await assertSuperAdmin();
+  const q = `%${query}%`;
+  return db.query.user.findMany({
+    where: {
+      OR: [
+        { name: { ilike: q } },
+        { email: { ilike: q } },
+        { slack_id: { ilike: q } },
+      ],
+    },
+    limit: 10,
+  });
+}
+
+type OrgRole = "helper" | "jellyHelper" | "admin" | "sponsor";
+
+export async function addOrgMember(
+  organizationId: string,
+  userId: string,
+  role: OrgRole,
+) {
+  await assertSuperAdmin();
+  // serverOnly endpoint — no org-permission check, so the super-admin gate above suffices.
+  await auth.api.addMember({
+    body: { organizationId, userId, role },
     headers: await headers(),
   });
+  revalidate();
+}
 
-  if (!session) throw new Error("Unauthorized");
+export async function updateOrgMemberRole(memberId: string, role: string) {
+  await assertSuperAdmin();
+  // Direct db: auth.api.updateMemberRole requires caller org membership.
+  await db.update(member).set({ role }).where(eq(member.id, memberId));
+  revalidate();
+}
 
-  if (!userIsSuperAdmin(session.user.role)) {
-    throw new Error("Forbidden");
-  }
+export async function removeOrgMember(memberId: string) {
+  await assertSuperAdmin();
+  // Direct db: auth.api.removeMember requires caller org membership.
+  await db.delete(member).where(eq(member.id, memberId));
+  revalidate();
+}
+
+// --- Users (global) ---
+
+export async function listAllUsers() {
+  await assertSuperAdmin();
+  return db.query.user.findMany({
+    with: { members: { with: { organization: true } } },
+    orderBy: (t, { desc }) => desc(t.createdAt),
+  });
+}
+
+export async function deleteUser(userId: string) {
+  await assertSuperAdmin();
+  // Cascades to session/account/user_preferences/member/invitation via FKs.
+  await db.delete(user).where(eq(user.id, userId));
+  revalidate();
+}
+
+export async function setUserGlobalRole(
+  userId: string,
+  role: "user" | "admin",
+) {
+  await assertSuperAdmin();
+  await auth.api.setRole({
+    body: { userId, role },
+    headers: await headers(),
+  });
+  revalidate();
+}
+
+export async function banUser(
+  userId: string,
+  banReason?: string,
+  banExpiresIn?: number,
+) {
+  await assertSuperAdmin();
+  await auth.api.banUser({
+    body: { userId, banReason, banExpiresIn },
+    headers: await headers(),
+  });
+  revalidate();
+}
+
+export async function unbanUser(userId: string) {
+  await assertSuperAdmin();
+  await auth.api.unbanUser({ body: { userId }, headers: await headers() });
+  revalidate();
 }
