@@ -3,25 +3,13 @@
 import { headers } from "next/headers";
 import { db } from "@/db";
 import { auth } from "@/lib/auth";
+import { redis } from "@/lib/redis";
 import { userIsSuperAdmin } from "@/lib/utils";
-
-export type InstanceData = {
-  instanceId: string;
-  organizationId: string;
-  name: string;
-  resolvedTickets: number;
-  openTickets: number;
-  inProgressTickets: number;
-  slug: string;
-  imageUrl: string | null;
-  slackChannel: string | null;
-  nephthysHostname: string | null;
-  deprecated: boolean;
-};
+import type { InstanceApiData, RedisInstanceStats } from "@/types/instances";
 
 export async function GetInstances(
   includePrivateInstances: boolean = false,
-): Promise<InstanceData[] | { error: string }> {
+): Promise<InstanceApiData[] | { error: string }> {
   // Only allow super admin to view private instances
   if (includePrivateInstances) {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -35,6 +23,14 @@ export async function GetInstances(
       nephthys_host: true,
     },
   });
+
+  let redisStats: RedisInstanceStats = {};
+  const redisStatsString = await redis.get("instanceStats");
+  console.log("Redis stats string:", redisStatsString);
+  if (redisStatsString && typeof redisStatsString === "object") {
+    // hopes and prayers right here
+    redisStats = redisStatsString as RedisInstanceStats;
+  }
 
   return data.map((instance) => {
     if (
@@ -51,9 +47,9 @@ export async function GetInstances(
       instanceId: instance.id,
       organizationId: instance.organizationId,
       name: instance.name,
-      resolvedTickets: parseInt(instance.resolvedTickets || "0", 10),
-      openTickets: parseInt(instance.openTickets || "0", 10),
-      inProgressTickets: parseInt(instance.inProgressTickets || "0", 10),
+      resolvedTickets: redisStats[instance.id]?.resolvedTickets || 0,
+      openTickets: redisStats[instance.id]?.openTickets || 0,
+      inProgressTickets: redisStats[instance.id]?.inProgressTickets || 0,
       slug: instance.organization.slug,
       imageUrl: instance.organization?.logo || null,
       slackChannel: instance.nephthys_host?.slackChannel || null,

@@ -1,9 +1,14 @@
-import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { GetInstances } from "@/app/actions/instance";
-import { db } from "@/db";
-import { instance as InstanceSchema } from "@/db/schemas/instance-schema";
 import { getStats } from "@/lib/nephthys";
+import { redis } from "@/lib/redis";
+import type { RedisInstanceStats } from "@/types/instances";
+
+/**
+  test command:
+  curl -X POST http://localhost:3000/api/cron -H "cron-secret: TEST_CRON_SECRET"
+
+ */
 
 // update instance stats
 export async function POST() {
@@ -19,6 +24,8 @@ export async function POST() {
       status: 500,
     });
   }
+
+  const instanceStats: RedisInstanceStats = {};
 
   try {
     for (const instance of instances) {
@@ -40,19 +47,25 @@ export async function POST() {
         continue;
       }
 
-      // the first time i did this i forgot ".where"...
-      await db
-        .update(InstanceSchema)
-        .set({
-          openTickets: stats.all_time.tickets_open.toString(),
-          inProgressTickets: stats.all_time.tickets_in_progress.toString(),
-          resolvedTickets: stats.all_time.tickets_closed.toString(),
-        })
-        .where(eq(InstanceSchema.id, instance.instanceId));
+      // why did i use postgres for this bradar
+      instanceStats[instance.instanceId] = {
+        openTickets: stats.all_time.tickets_open,
+        inProgressTickets: stats.all_time.tickets_in_progress,
+        resolvedTickets: stats.all_time.tickets_closed,
+      };
     }
   } catch (error) {
-    console.error("Error updating instance stats:", error);
-    return new Response("Failed to update instance stats", { status: 500 });
+    console.error("Error fetching instance stats:", error);
+    return new Response("Failed to fetch instance stats", { status: 500 });
+  }
+
+  try {
+    await redis.set("instanceStats", JSON.stringify(instanceStats)); // no expiration, cuz we want this to persist until the next cron job runs
+  } catch (error) {
+    console.error("Error saving instance stats to Redis:", error);
+    return new Response("Failed to save instance stats to Redis", {
+      status: 500,
+    });
   }
 
   return new Response("Instance stats updated successfully", { status: 200 });
