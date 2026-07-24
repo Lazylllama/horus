@@ -12,6 +12,7 @@ export function Footer() {
         alt="Horus"
         width={817 / 2.5}
         height={123 / 2.5}
+        loading="eager"
       />
       <a
         href={`https://github.com/lazylllama/horus-dashboard/commit/${lastCommitSha}`}
