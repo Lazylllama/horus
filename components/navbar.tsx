@@ -54,6 +54,18 @@ export default function Navbar() {
             />
           </div>
           <div className="flex items-center gap-2">
+            {session?.session.impersonatedBy && (
+              <span className="text-sm text-muted-foreground border-3 border-dashed border-restricted rounded-sm  px-2 py-1">
+                Impersonating {session.user.name}
+                <Button
+                  variant="destructive"
+                  className="ml-2"
+                  onClick={() => authClient.admin.stopImpersonating()}
+                >
+                  Stop
+                </Button>
+              </span>
+            )}
             <ThemeSwitcher />
             <SettingsModal />
             {session || isPending ? (
@@ -122,7 +134,11 @@ export default function Navbar() {
             displayName="Dashboard"
             disabled={!isPending && !session?.preferences?.defaultHost}
           />
-          {/* <PageButton path={"/dashboard/settings"} displayName="Settings" /> */}
+          <PageButton
+            path={"/dashboard/settings"}
+            displayName="Settings"
+            disabled={!isPending && !session?.preferences?.defaultHost}
+          />
           {userIsSuperAdmin(session?.user.role) && (
             <PageButton
               path={"/dashboard/admin"}

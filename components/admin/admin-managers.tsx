@@ -1,5 +1,8 @@
 "use client";
 
+//! This file is made with complete vibes by my dearest claude, will be remade when I actually have decidede the structure of everything,
+//! but for now i need this and I dont want to "hourmaxx" by making something i'll throw away love you bai bai
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -278,7 +281,7 @@ export function UsersManager({
   orgs,
 }: {
   users: UserRow[];
-  orgs: { id: string; label: string }[];
+  orgs: { id: string; name: string }[];
 }) {
   return (
     <div className="flex flex-col gap-2 py-4">
@@ -315,7 +318,11 @@ export function UsersManager({
                     </span>
                   </div>
                 </TableCell>
-                <TableCell>{u.email}</TableCell>
+                <TableCell>
+                  <span className="blur-sm hover:blur-none transition-all duration-300">
+                    {u.email}
+                  </span>
+                </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {u.members.map((m) => (
@@ -392,7 +399,7 @@ function ManageOrgsDialog({
   orgs,
 }: {
   user: UserRow;
-  orgs: { id: string; label: string }[];
+  orgs: { id: string; name: string }[];
 }) {
   const [orgId, setOrgId] = useState(orgs[0]?.id ?? "");
   const [role, setRole] = useState(ORG_ROLES[0]);
@@ -454,12 +461,14 @@ function ManageOrgsDialog({
                 onValueChange={(v) => setOrgId(v as string)}
               >
                 <SelectTrigger size="sm" className="flex-1">
-                  <SelectValue placeholder="Org" />
+                  <SelectValue placeholder="Org">
+                    {orgId ? orgs.find((o) => o.id === orgId)?.name : "Org"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {orgs.map((o) => (
                     <SelectItem key={o.id} value={o.id}>
-                      {o.label}
+                      {o.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -59,6 +59,9 @@ async function UsersSection() {
   const orgs =
     "error" in instances
       ? []
-      : instances.map((i) => ({ id: i.organizationId, label: i.slug }));
+      : instances.map((i) => ({
+          id: i.organizationId,
+          name: i.name,
+        }));
   return <UsersManager users={users} orgs={orgs} />;
 }

@@ -61,6 +61,7 @@ export const auth = betterAuth({
     }),
     organization({
       allowUserToCreateOrganization: false,
+      creatorRole: "sponsor",
       ac,
       roles: {
         helper: helperRole,

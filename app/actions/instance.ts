@@ -26,7 +26,6 @@ export async function GetInstances(
 
   let redisStats: RedisInstanceStats = {};
   const redisStatsString = await redis.get("instanceStats");
-  console.log("Redis stats string:", redisStatsString);
   if (redisStatsString && typeof redisStatsString === "object") {
     // hopes and prayers right here
     redisStats = redisStatsString as RedisInstanceStats;
