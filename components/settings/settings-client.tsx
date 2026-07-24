@@ -141,8 +141,8 @@ function SettingsInner({ data }: { data: NonNullable<SettingsData> }) {
   const visible: SettingsSection[] = [
     perms.identityRead && "Identity",
     perms.membersRead && "Members",
-    perms.sensitiveRead && "Nephthys",
-    perms.jellyRead && "Jelly",
+    perms.nephthysRead && "Nephthys",
+    perms.sensitiveRead && "Jelly",
     perms.danger && "Danger",
   ].filter(Boolean) as SettingsSection[];
 
@@ -205,20 +205,20 @@ function SettingsInner({ data }: { data: NonNullable<SettingsData> }) {
                     />
                   </Section>
                 )}
-                {perms.sensitiveRead && (
+                {perms.nephthysRead && (
                   <Section name="Nephthys">
                     <NephthysForm
                       nephthys={data.nephthys}
-                      canWrite={perms.sensitiveWrite}
+                      canWrite={perms.nephthysWrite}
                       onSaved={refresh}
                     />
                   </Section>
                 )}
-                {perms.jellyRead && (
+                {perms.sensitiveRead && (
                   <Section name="Jelly">
                     <JellyForm
                       hasKey={data.jelly.hasKey}
-                      canWrite={perms.sensitiveWrite}
+                      canWrite={perms.nephthysWrite}
                       onSaved={refresh}
                     />
                   </Section>

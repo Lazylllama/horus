@@ -84,12 +84,13 @@ export async function getSettingsData() {
     perms: {
       identityRead: authorize({ instance: ["general:read"] }),
       identityWrite: authorize({ instance: ["general:write"] }),
+      nephthysRead: authorize({ instance: ["general:read"] }),
+      nephthysWrite: authorize({ instance: ["general:write"] }),
       membersRead: authorize({ instance: ["members:read"] }),
       membersWrite: authorize({ instance: ["members:write"] }),
       sensitiveRead: authorize({ instance: ["sensitive:read"] }),
       sensitiveWrite: authorize({ instance: ["sensitive:write"] }),
       danger: authorize({ instance: ["danger:write"] }),
-      jellyRead: authorize({ jelly: ["read"] }),
     },
     identity: {
       name: org.name,

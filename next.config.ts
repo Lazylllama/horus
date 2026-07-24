@@ -9,6 +9,15 @@ const nextConfig: NextConfig = {
       permanent: true,
     },
   ],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cdn.hackclub.com",
+        port: "",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

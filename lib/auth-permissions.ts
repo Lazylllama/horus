@@ -25,7 +25,7 @@ const jellyHelper = ac.newRole({
 });
 
 const admin = ac.newRole({
-  instance: ["general:read", "members:read", "members:write"],
+  instance: ["general:read", "general:write", "members:read", "members:write"],
   jelly: ["read"],
 });
 
