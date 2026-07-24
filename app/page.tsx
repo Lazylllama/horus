@@ -65,7 +65,7 @@ async function InstanceGrid() {
             resolved: instance.resolvedTickets,
             inProgress: instance.inProgressTickets,
           }}
-          imageUrl={instance.imageUrl && `/instances/${instance.imageUrl}`}
+          imageUrl={instance.imageUrl}
           deprecated={instance.deprecated}
         />
       ))}
