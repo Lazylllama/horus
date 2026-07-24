@@ -31,7 +31,6 @@ export function InstanceCard({
 }) {
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
-  const { data: session, isPending } = authClient.useSession();
 
   async function handleSelectHost() {
     await updatePreferences({
