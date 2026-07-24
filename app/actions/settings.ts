@@ -1,0 +1,333 @@
+"use server";
+
+import { eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { db } from "@/db";
+import { member, organization } from "@/db/schemas/auth-schema";
+import { jelly_host, nephthys_host } from "@/db/schemas/instance-schema";
+import { auth } from "@/lib/auth";
+import {
+  authorizeInstanceRole,
+  type PermissionRequest,
+} from "@/lib/auth-permissions";
+import { encrypt } from "@/lib/encryption";
+
+// customSession's inferred type drops the org plugin's session field, but the
+// organization plugin does set it at runtime. Read it through a narrow cast.
+function activeOrgOf(
+  session: NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>,
+): string | null {
+  return (
+    (session.session as { activeOrganizationId?: string | null })
+      .activeOrganizationId ?? null
+  );
+}
+
+// ==================== permission gate ====================
+
+// Resolves the caller's active instance and enforces `permissions` against
+// their org role. Every mutating action below routes through this — it is the
+// single server-side authority; the UI flags from getSettingsData are cosmetic.
+async function requireInstance(permissions: PermissionRequest) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) throw new Error("Unauthorized");
+
+  const organizationId = activeOrgOf(session);
+  if (!organizationId) throw new Error("No active instance selected");
+
+  const m = await db.query.member.findFirst({
+    where: { organizationId, userId: session.user.id },
+  });
+  if (!m) throw new Error("You are not a member of this instance");
+  if (!authorizeInstanceRole(m.role, permissions)) throw new Error("Forbidden");
+
+  return { session, organizationId, callerMemberId: m.id, role: m.role };
+}
+
+function revalidate() {
+  revalidatePath("/dashboard/settings");
+}
+
+// ==================== read ====================
+
+export type SettingsData = Awaited<ReturnType<typeof getSettingsData>>;
+
+export async function getSettingsData() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) return null;
+
+  const organizationId = activeOrgOf(session);
+  if (!organizationId) return null;
+
+  const org = await db.query.organization.findFirst({
+    where: { id: organizationId },
+    with: {
+      instance: { with: { nephthys_host: true, jelly_host: true } },
+      members: { with: { user: true } },
+    },
+  });
+  if (!org?.instance) return null;
+
+  const me = org.members.find((m) => m.userId === session.user.id);
+  if (!me) return null; // not a member → no access
+
+  const authorize = (p: PermissionRequest) => authorizeInstanceRole(me.role, p);
+  let transparent = false;
+  try {
+    transparent = !!JSON.parse(org.metadata ?? "{}").transparent;
+  } catch {}
+
+  return {
+    perms: {
+      identityRead: authorize({ instance: ["general:read"] }),
+      identityWrite: authorize({ instance: ["general:write"] }),
+      membersRead: authorize({ instance: ["members:read"] }),
+      membersWrite: authorize({ instance: ["members:write"] }),
+      sensitiveRead: authorize({ instance: ["sensitive:read"] }),
+      sensitiveWrite: authorize({ instance: ["sensitive:write"] }),
+      danger: authorize({ instance: ["danger:write"] }),
+      jellyRead: authorize({ jelly: ["read"] }),
+    },
+    identity: {
+      name: org.name,
+      slug: org.slug,
+      logo: org.logo,
+      transparent,
+    },
+    nephthys: {
+      host: org.instance.nephthys_host?.host ?? "",
+      slackChannel: org.instance.nephthys_host?.slackChannel ?? "",
+    },
+    jelly: {
+      // Never ship the key to the client — only whether one is set.
+      hasKey: !!org.instance.jelly_host?.jellyApiKey,
+    },
+    members: org.members.map((m) => ({
+      memberId: m.id,
+      userId: m.userId,
+      name: m.user?.name ?? "Unknown",
+      slack_id: m.user?.slack_id ?? "",
+      role: m.role,
+    })),
+  };
+}
+
+// ==================== identity (general:write) ====================
+
+export async function updateIdentity(input: {
+  name?: string;
+  slug?: string;
+  logo?: string | null;
+  transparent?: boolean;
+}) {
+  const { organizationId } = await requireInstance({
+    instance: ["general:write"],
+  });
+
+  const set: Record<string, unknown> = {};
+  if (input.name !== undefined) set.name = input.name;
+  if (input.slug !== undefined) set.slug = input.slug.toLowerCase();
+  if (input.logo !== undefined) set.logo = input.logo || null;
+  if (input.transparent !== undefined) {
+    const current = await db.query.organization.findFirst({
+      where: { id: organizationId },
+    });
+    let meta: Record<string, unknown> = {};
+    try {
+      meta = JSON.parse(current?.metadata ?? "{}");
+    } catch {}
+    meta.transparent = input.transparent;
+    set.metadata = JSON.stringify(meta);
+  }
+
+  if (Object.keys(set).length === 0) return;
+  await db
+    .update(organization)
+    .set(set)
+    .where(eq(organization.id, organizationId));
+  revalidate();
+}
+
+// ==================== nephthys host (sensitive:write) ====================
+
+export async function updateNephthys(input: {
+  host: string;
+  slackChannel: string;
+}) {
+  const { organizationId } = await requireInstance({
+    instance: ["sensitive:write"],
+  });
+  const instanceId = await instanceIdFor(organizationId);
+
+  await db
+    .insert(nephthys_host)
+    .values({ instanceId, ...input })
+    .onConflictDoUpdate({ target: nephthys_host.instanceId, set: input });
+  revalidate();
+}
+
+// ==================== jelly key (sensitive:write) ====================
+
+export async function updateJellyKey(apiKey: string) {
+  const { organizationId } = await requireInstance({
+    instance: ["sensitive:write"],
+  });
+  const instanceId = await instanceIdFor(organizationId);
+
+  const encrypted = encrypt(apiKey);
+  if (!encrypted) throw new Error("Encryption is not configured");
+
+  await db
+    .insert(jelly_host)
+    .values({ instanceId, jellyApiKey: encrypted })
+    .onConflictDoUpdate({
+      target: jelly_host.instanceId,
+      set: { jellyApiKey: encrypted },
+    });
+  revalidate();
+}
+
+// ==================== members (members:write) ====================
+
+type OrgRole = "helper" | "jellyHelper" | "admin" | "sponsor";
+
+export async function searchInstanceCandidates(query: string) {
+  await requireInstance({ instance: ["members:write"] });
+  if (query.trim().length < 2) return [];
+  const q = `%${query}%`;
+  return db.query.user.findMany({
+    where: {
+      OR: [
+        { name: { ilike: q } },
+        { email: { ilike: q } },
+        { slack_id: { ilike: q } },
+      ],
+    },
+    columns: { id: true, name: true, slack_id: true },
+    limit: 10,
+  });
+}
+
+export async function addInstanceMember(userId: string, role: OrgRole) {
+  const { organizationId } = await requireInstance({
+    instance: ["members:write"],
+  });
+
+  const existing = await db.query.member.findFirst({
+    where: { organizationId, userId },
+  });
+  if (existing) throw new Error("User is already a member");
+
+  await db.insert(member).values({
+    id: crypto.randomUUID(),
+    organizationId,
+    userId,
+    role,
+    createdAt: new Date(),
+  });
+  revalidate();
+}
+
+export async function updateInstanceMemberRole(
+  memberId: string,
+  role: OrgRole,
+) {
+  const { organizationId } = await requireInstance({
+    instance: ["members:write"],
+  });
+  const target = await memberInOrg(memberId, organizationId);
+
+  // Don't strand the instance without a sponsor.
+  if (target.role === "sponsor" && role !== "sponsor") {
+    await assertNotLastSponsor(organizationId);
+  }
+
+  await db.update(member).set({ role }).where(eq(member.id, memberId));
+  revalidate();
+}
+
+export async function removeInstanceMember(memberId: string) {
+  const { organizationId } = await requireInstance({
+    instance: ["members:write"],
+  });
+  const target = await memberInOrg(memberId, organizationId);
+
+  if (target.role === "sponsor") await assertNotLastSponsor(organizationId);
+
+  await db.delete(member).where(eq(member.id, memberId));
+  revalidate();
+}
+
+// ==================== danger zone (danger:write) ====================
+
+export async function transferInstance(newSponsorUserId: string) {
+  const { organizationId, callerMemberId } = await requireInstance({
+    instance: ["danger:write"],
+  });
+
+  const target = await db.query.member.findFirst({
+    where: { organizationId, userId: newSponsorUserId },
+  });
+  if (!target) throw new Error("New sponsor must already be a member");
+  if (target.id === callerMemberId)
+    throw new Error("You already own this instance");
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(member)
+      .set({ role: "sponsor" })
+      .where(eq(member.id, target.id));
+    // Step the previous sponsor down to admin so ownership actually moves.
+    await tx
+      .update(member)
+      .set({ role: "admin" })
+      .where(eq(member.id, callerMemberId));
+  });
+  revalidate();
+}
+
+export async function deleteInstance() {
+  const { organizationId } = await requireInstance({
+    instance: ["danger:write"],
+  });
+  // Cascades to instance / member / nephthys_host / jelly_host via FKs.
+  await db.delete(organization).where(eq(organization.id, organizationId));
+  // Nothing left to be active in.
+  await auth.api.setActiveOrganization({
+    headers: await headers(),
+    body: { organizationId: null },
+  });
+  revalidate();
+}
+
+// ==================== helpers ====================
+
+async function instanceIdFor(organizationId: string) {
+  const org = await db.query.organization.findFirst({
+    where: { id: organizationId },
+    with: { instance: true },
+  });
+  if (!org?.instance) throw new Error("Instance not found");
+  return org.instance.id;
+}
+
+// Guarantees the member row belongs to the caller's org — otherwise a sponsor
+// could pass a memberId from someone else's instance.
+async function memberInOrg(memberId: string, organizationId: string) {
+  const m = await db.query.member.findFirst({ where: { id: memberId } });
+  if (!m || m.organizationId !== organizationId) {
+    throw new Error("Member not found in this instance");
+  }
+  return m;
+}
+
+async function assertNotLastSponsor(organizationId: string) {
+  const sponsors = await db.query.member.findMany({
+    where: { organizationId, role: "sponsor" },
+    columns: { id: true },
+  });
+  if (sponsors.length <= 1) {
+    throw new Error("Transfer ownership first — an instance needs a sponsor");
+  }
+}

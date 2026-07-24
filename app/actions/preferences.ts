@@ -9,7 +9,8 @@ export async function updatePreferences(input: {
   defaultHost?: string;
   isOptedOutTracking?: boolean;
 }) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const h = await headers();
+  const session = await auth.api.getSession({ headers: h });
   if (!session) return { error: "Unauthorized" };
 
   await db
@@ -23,5 +24,30 @@ export async function updatePreferences(input: {
       set: input,
     });
 
+  // The default host also picks which instance the Settings page manages:
+  // point the active org at the host's org, but only if the user is a member.
+  if (input.defaultHost !== undefined) {
+    await syncActiveOrg(session.user.id, input.defaultHost, h);
+  }
+
   return { success: true };
+}
+
+async function syncActiveOrg(userId: string, defaultHost: string, h: Headers) {
+  const host = await db.query.nephthys_host.findFirst({
+    where: { host: defaultHost },
+    with: { instance: true },
+  });
+  const organizationId = host?.instance?.organizationId ?? null;
+
+  const isMember =
+    organizationId != null &&
+    !!(await db.query.member.findFirst({
+      where: { organizationId, userId },
+    }));
+
+  await auth.api.setActiveOrganization({
+    headers: h,
+    body: { organizationId: isMember ? organizationId : null },
+  });
 }

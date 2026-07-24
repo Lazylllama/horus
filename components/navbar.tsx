@@ -134,11 +134,9 @@ export default function Navbar() {
             displayName="Dashboard"
             disabled={!isPending && !session?.preferences?.defaultHost}
           />
-          <PageButton
-            path={"/dashboard/settings"}
-            displayName="Settings"
-            disabled={!isPending && !session?.preferences?.defaultHost}
-          />
+          {(isPending || session?.session.activeOrganizationId) && (
+            <PageButton path={"/dashboard/settings"} displayName="Settings" />
+          )}
           {userIsSuperAdmin(session?.user.role) && (
             <PageButton
               path={"/dashboard/admin"}
