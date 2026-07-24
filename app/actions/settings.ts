@@ -229,9 +229,12 @@ export async function updateInstanceMemberRole(
   });
   const target = await memberInOrg(memberId, organizationId);
 
-  // Don't strand the instance without a sponsor.
-  if (target.role === "sponsor" && role !== "sponsor") {
-    await assertNotLastSponsor(organizationId);
+  if (role === "sponsor") {
+    throw new Error("Cannot promote to sponsor — transfer ownership instead");
+  }
+
+  if (target.role === "sponsor") {
+    throw new Error("Cannot demote the sponsor — transfer ownership instead");
   }
 
   await db.update(member).set({ role }).where(eq(member.id, memberId));
@@ -264,17 +267,27 @@ export async function transferInstance(newSponsorUserId: string) {
   if (target.id === callerMemberId)
     throw new Error("You already own this instance");
 
-  await db.transaction(async (tx) => {
-    await tx
-      .update(member)
-      .set({ role: "sponsor" })
-      .where(eq(member.id, target.id));
-    // Step the previous sponsor down to admin so ownership actually moves.
-    await tx
-      .update(member)
-      .set({ role: "admin" })
-      .where(eq(member.id, callerMemberId));
-  });
+  //? Neon doesnt support tx, if it fails, well ggs
+  // await db.transaction(async (tx) => {
+  //   await tx
+  //     .update(member)
+  //     .set({ role: "sponsor" })
+  //     .where(eq(member.id, target.id));
+  //   // Step the previous sponsor down to admin so ownership actually moves.
+  //   await tx
+  //     .update(member)
+  //     .set({ role: "admin" })
+  //     .where(eq(member.id, callerMemberId));
+  // });
+
+  await db
+    .update(member)
+    .set({ role: "sponsor" })
+    .where(eq(member.id, target.id));
+  await db
+    .update(member)
+    .set({ role: "admin" })
+    .where(eq(member.id, callerMemberId));
   revalidate();
 }
 

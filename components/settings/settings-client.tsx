@@ -68,6 +68,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const ORG_ROLES = ["helper", "jellyHelper", "admin", "sponsor"] as const;
+const PROMOTABLE_ROLES = ["helper", "jellyHelper", "admin"] as const;
 type OrgRole = (typeof ORG_ROLES)[number];
 
 type SettingsSection = "Identity" | "Members" | "Nephthys" | "Jelly" | "Danger";
@@ -410,6 +411,7 @@ function MembersPanel({
                     {canWrite ? (
                       <Select
                         value={m.role}
+                        disabled={m.role === "sponsor"}
                         onValueChange={(v) =>
                           run(
                             () =>
@@ -425,7 +427,7 @@ function MembersPanel({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {ORG_ROLES.map((r) => (
+                          {PROMOTABLE_ROLES.map((r) => (
                             <SelectItem key={r} value={r}>
                               {r}
                             </SelectItem>
