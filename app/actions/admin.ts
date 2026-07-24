@@ -10,8 +10,14 @@ import {
   nephthys_host,
 } from "@/db/schemas/instance-schema";
 import { auth } from "@/lib/auth";
+import type { OrgRole } from "@/lib/auth-permissions";
 import { userIsSuperAdmin } from "@/lib/utils";
+import { searchGlobalUsers } from "./shared";
 
+/**
+ * All admin actions require a global "admin" role
+ * see lib/utils.ts:userIsSuperAdmin :)
+ */
 async function assertSuperAdmin() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) throw new Error("Unauthorized");
@@ -19,12 +25,16 @@ async function assertSuperAdmin() {
   return session;
 }
 
+// revalidate after changes
 function revalidate() {
   revalidatePath("/dashboard/admin");
 }
 
-// --- Instances / orgs ---
-
+//? --- Instances / orgs ---
+/**
+ * Creates a new instance (inlcuding org & nephthys_host) with the provided input.
+ * @param input The instance details.
+ */
 export async function createInstance(input: {
   name: string;
   slug: string;
@@ -103,24 +113,16 @@ export async function deleteInstance(organizationId: string) {
   revalidate();
 }
 
-// --- Org membership ---
-
+//? --- Org membership ---
+/**
+ * Look for query in name, slack_id and email and return up to 10 results.
+ * @param query what to look for
+ * @returns all results
+ */
 export async function searchUsers(query: string) {
   await assertSuperAdmin();
-  const q = `%${query}%`;
-  return db.query.user.findMany({
-    where: {
-      OR: [
-        { name: { ilike: q } },
-        { email: { ilike: q } },
-        { slack_id: { ilike: q } },
-      ],
-    },
-    limit: 10,
-  });
+  return searchGlobalUsers(query, true); // search email too for super-admins
 }
-
-type OrgRole = "helper" | "jellyHelper" | "admin" | "sponsor";
 
 export async function addOrgMember(
   organizationId: string,
@@ -128,7 +130,6 @@ export async function addOrgMember(
   role: OrgRole,
 ) {
   await assertSuperAdmin();
-  // serverOnly endpoint — no org-permission check, so the super-admin gate above suffices.
   await auth.api.addMember({
     body: { organizationId, userId, role },
     headers: await headers(),
@@ -136,27 +137,33 @@ export async function addOrgMember(
   revalidate();
 }
 
-export async function updateOrgMemberRole(memberId: string, role: string) {
+/**
+ * Update org role of member
+ * @param memberId this is the pkey memberId, not the userId
+ * @param role type OrgRole
+ */
+export async function updateOrgMemberRole(memberId: string, role: OrgRole) {
   await assertSuperAdmin();
-  // Direct db: auth.api.updateMemberRole requires caller org membership.
   await db.update(member).set({ role }).where(eq(member.id, memberId));
   revalidate();
 }
 
+/**
+ * Removes a member from an organization.
+ * @param memberId This is pkey memberId, not the userId
+ */
 export async function removeOrgMember(memberId: string) {
   await assertSuperAdmin();
-  // Direct db: auth.api.removeMember requires caller org membership.
   await db.delete(member).where(eq(member.id, memberId));
   revalidate();
 }
 
-// --- Users (global) ---
-
+//? --- Users (global) ---
 export async function listAllUsers() {
   await assertSuperAdmin();
   return db.query.user.findMany({
     with: { members: { with: { organization: true } } },
-    orderBy: (t, { desc }) => desc(t.createdAt),
+    orderBy: (user, { desc }) => desc(user.createdAt),
   });
 }
 

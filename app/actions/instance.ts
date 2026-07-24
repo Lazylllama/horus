@@ -58,11 +58,6 @@ export async function GetInstances(
   });
 }
 
-export async function GetMyInstances() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) return { error: "Unauthorized" };
-}
-
 export async function GetNephthysHostnameFromSlug(slug: string) {
   const org = await db.query.organization.findFirst({
     where: { slug: slug.toLocaleLowerCase() },

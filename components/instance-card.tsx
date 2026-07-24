@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { updatePreferences } from "@/app/actions/preferences";
+import { toast } from "@/components/ui/toast";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "./ui/card";
@@ -30,11 +31,23 @@ export function InstanceCard({
 }) {
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
+  const { data: session, isPending } = authClient.useSession();
 
   async function handleSelectHost() {
     await updatePreferences({
       defaultHost: slug,
     });
+    const changeOrg = await authClient.organization.setActive({
+      organizationSlug: slug,
+    });
+
+    if (changeOrg.error) {
+      if (changeOrg.error.status !== 403)
+        toast.add({
+          title: "Error",
+          description: "Failed to change active organization",
+        });
+    }
     router.push(`/dashboard/${slug}`);
   }
 

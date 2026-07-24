@@ -134,9 +134,9 @@ export default function Navbar() {
             displayName="Dashboard"
             disabled={!isPending && !session?.preferences?.defaultHost}
           />
-          {(isPending || session?.session.activeOrganizationId) && (
-            <PageButton path={"/dashboard/settings"} displayName="Settings" />
-          )}
+          <Suspense fallback={null}>
+            <SettingsButtonComponent />
+          </Suspense>
           {userIsSuperAdmin(session?.user.role) && (
             <PageButton
               path={"/dashboard/admin"}
@@ -229,4 +229,29 @@ function FallbackPageButtonComponent({ displayName }: { displayName: string }) {
       {displayName}
     </div>
   );
+}
+
+function SettingsButtonComponent() {
+  const { data: session } = authClient.useSession();
+  const { data: org } = authClient.useActiveOrganization();
+  const pathname = usePathname();
+
+  function canEditCurrentHost() {
+    if (!session || !org) return false;
+    if (!pathname) return false;
+
+    const isAdminPage = pathname.startsWith("/dashboard/admin");
+    const isSettingsPage = pathname.startsWith("/dashboard/settings");
+    const isOnInstancePage = pathname.startsWith(`/dashboard/${org.slug}`);
+
+    if (isAdminPage || isSettingsPage || isOnInstancePage) {
+      return true;
+    }
+
+    return false;
+  }
+
+  if (canEditCurrentHost())
+    return <PageButton path={"/dashboard/settings"} displayName="Settings" />;
+  else return null;
 }

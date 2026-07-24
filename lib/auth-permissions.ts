@@ -43,7 +43,7 @@ const sponsor = ac.newRole({
 });
 
 const ROLES = { helper, jellyHelper, admin, sponsor } as const;
-export type InstanceRole = keyof typeof ROLES;
+export type OrgRole = keyof typeof ROLES;
 
 type InstanceAction = (typeof statement.instance)[number];
 export type PermissionRequest = {
@@ -59,7 +59,7 @@ export function authorizeInstanceRole(
 ): boolean {
   if (!role) return false;
   return role.split(",").some((r) => {
-    const roleObj = ROLES[r.trim() as InstanceRole];
+    const roleObj = ROLES[r.trim() as OrgRole];
     return roleObj?.authorize(permissions as never).success ?? false;
   });
 }

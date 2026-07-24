@@ -21,6 +21,7 @@ import {
   updateOrgMemberRole,
 } from "@/app/actions/admin";
 import { authClient } from "@/lib/auth-client";
+import type { OrgRole } from "@/lib/auth-permissions";
 import type { InstanceApiData } from "@/types/instances";
 import {
   AlertDialog,
@@ -428,7 +429,7 @@ function ManageOrgsDialog({
                 <Select
                   value={m.role}
                   onValueChange={(v) =>
-                    run(() => updateOrgMemberRole(m.id, v as string))
+                    run(() => updateOrgMemberRole(m.id, v as OrgRole))
                   }
                 >
                   <SelectTrigger size="sm">

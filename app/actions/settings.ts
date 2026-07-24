@@ -9,9 +9,11 @@ import { jelly_host, nephthys_host } from "@/db/schemas/instance-schema";
 import { auth } from "@/lib/auth";
 import {
   authorizeInstanceRole,
+  type OrgRole,
   type PermissionRequest,
 } from "@/lib/auth-permissions";
 import { encrypt } from "@/lib/encryption";
+import { searchGlobalUsers } from "./shared";
 
 // customSession's inferred type drops the org plugin's session field, but the
 // organization plugin does set it at runtime. Read it through a narrow cast.
@@ -190,23 +192,11 @@ export async function updateJellyKey(apiKey: string) {
 
 // ==================== members (members:write) ====================
 
-type OrgRole = "helper" | "jellyHelper" | "admin" | "sponsor";
-
 export async function searchInstanceCandidates(query: string) {
   await requireInstance({ instance: ["members:write"] });
-  if (query.trim().length < 2) return [];
-  const q = `%${query}%`;
-  return db.query.user.findMany({
-    where: {
-      OR: [
-        { name: { ilike: q } },
-        { email: { ilike: q } },
-        { slack_id: { ilike: q } },
-      ],
-    },
-    columns: { id: true, name: true, slack_id: true },
-    limit: 10,
-  });
+
+  //! NO EMAIL SEARCH FOR MEMBERSHIP MANAGEMENT — EMAIL IS ONLY FOR SUPERADMIN SEARCH
+  return searchGlobalUsers(query, false);
 }
 
 export async function addInstanceMember(userId: string, role: OrgRole) {

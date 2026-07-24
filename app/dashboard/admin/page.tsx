@@ -17,11 +17,6 @@ import { auth } from "@/lib/auth";
 import { userIsSuperAdmin } from "@/lib/utils";
 
 export default async function AdminPage() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session || !userIsSuperAdmin(session.user.role)) {
-    return redirect("/");
-  }
-
   return (
     <>
       <Navbar />
@@ -32,15 +27,30 @@ export default async function AdminPage() {
           </PageHeader>
 
           <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-            <InstancesSection />
-          </Suspense>
-
-          <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-            <UsersSection />
+            <AdminContent />
           </Suspense>
         </PageWrapper>
       </ErrorFallback>
       <Footer />
+    </>
+  );
+}
+
+async function AdminContent() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session || !userIsSuperAdmin(session.user.role)) {
+    return redirect("/");
+  }
+
+  return (
+    <>
+      {" "}
+      <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+        <InstancesSection />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+        <UsersSection />
+      </Suspense>
     </>
   );
 }

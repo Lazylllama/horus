@@ -120,8 +120,8 @@ export function SettingsClient({ data }: { data: SettingsData }) {
           </PageHeader>
           <Card className="w-full border-2">
             <CardContent className="py-8 text-center text-muted-foreground">
-              You don't manage an instance yet. Set a default host you're a
-              member of in your preferences to unlock these settings.
+              Go back to the <LinkHref href="/">homepage</LinkHref> and
+              re-select an instance you are apart of.
             </CardContent>
           </Card>
         </PageWrapper>
@@ -341,7 +341,7 @@ function IdentityForm({
           <div className="flex flex-col">
             <p className="text-md font-bold">Instance Transparency</p>
             <p className="text-sm text-muted-foreground">
-              show your instance to the public or not. Doesn't do squat yet :)
+              Show your instance to the public or not. Doesn't do squat yet :)
             </p>
           </div>
           <Switch

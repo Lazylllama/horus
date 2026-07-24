@@ -15,14 +15,3 @@ export async function getCachetUser(
   const user = (await response.json()) as CachetUser;
   return user;
 }
-
-export async function getCachetUsers(slackIds: string[]) {
-  const uniqueSlackIds = [...new Set(slackIds.filter(Boolean))];
-  const users = await Promise.all(
-    uniqueSlackIds.map(
-      async (slackId) => [slackId, await getCachetUser(slackId)] as const,
-    ),
-  );
-
-  return new Map(users);
-}
