@@ -7,7 +7,6 @@ import type { RedisInstanceStats } from "@/types/instances";
 /**
   test command:
   curl -X POST http://localhost:3000/api/cron -H "cron-secret: TEST_CRON_SECRET"
-
  */
 
 // update instance stats
@@ -43,7 +42,9 @@ export async function POST() {
         !stats.all_time.tickets_open ||
         !stats.all_time.tickets_closed
       ) {
-        console.error(`Failed to fetch stats for instance ${instance.name}`);
+        console.error(
+          `Failed to fetch stats for instance ${instance.name}, data: ${JSON.stringify(stats)}`,
+        );
         continue;
       }
 
