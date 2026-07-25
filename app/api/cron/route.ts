@@ -38,9 +38,9 @@ export async function POST() {
       const stats = await getStats(instance.nephthysHostname);
 
       if (
-        !stats.all_time.tickets_in_progress ||
-        !stats.all_time.tickets_open ||
-        !stats.all_time.tickets_closed
+        typeof stats.all_time.tickets_in_progress !== "number" ||
+        typeof stats.all_time.tickets_open !== "number" ||
+        typeof stats.all_time.tickets_closed !== "number"
       ) {
         console.error(
           `Failed to fetch stats for instance ${instance.name}, data: ${JSON.stringify(stats)}`,
