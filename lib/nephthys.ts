@@ -47,6 +47,13 @@ export async function getStats(
     revalidate: 30,
   });
 
+  if (!rawStats) {
+    console.error(
+      `Failed to fetch stats from Nephthys for host: ${host}, raw stats: ${JSON.stringify(rawStats)}`,
+    );
+    throw new Error("Failed to fetch stats from Nephthys");
+  }
+
   const enrichedStats = {
     ...rawStats,
     all_time: {
