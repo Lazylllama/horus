@@ -205,8 +205,12 @@ function NewInstanceDialog() {
         >
           <Field name="name" label="Name" />
           <Field name="slug" label="Slug" />
-          <Field name="host" label="Nephthys host" />
-          <Field name="slackChannel" label="Slack channel id" />
+          <Field name="host" label="Nephthys host" required={false} />
+          <Field
+            name="slackChannel"
+            label="Slack channel id"
+            required={false}
+          />
           <div className="flex flex-col gap-1">
             <Label>Sponsor {sponsor && `→ ${sponsor.name}`}</Label>
             <UserSearch onSelect={setSponsor} />
@@ -531,15 +535,22 @@ function Field({
   name,
   label,
   defaultValue,
+  required = true,
 }: {
   name: string;
   label: string;
   defaultValue?: string;
+  required?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-1">
       <Label htmlFor={name}>{label}</Label>
-      <Input id={name} name={name} defaultValue={defaultValue} required />
+      <Input
+        id={name}
+        name={name}
+        defaultValue={defaultValue}
+        required={required}
+      />
     </div>
   );
 }

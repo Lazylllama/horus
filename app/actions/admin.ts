@@ -39,8 +39,8 @@ export async function createInstance(input: {
   name: string;
   slug: string;
   sponsorId: string;
-  host: string;
-  slackChannel: string;
+  host?: string;
+  slackChannel?: string;
 }) {
   await assertSuperAdmin();
 
@@ -58,11 +58,13 @@ export async function createInstance(input: {
   await db
     .insert(instanceTable)
     .values({ id: instanceId, name: input.name, organizationId: org.id });
-  await db.insert(nephthys_host).values({
-    instanceId,
-    host: input.host,
-    slackChannel: input.slackChannel,
-  });
+  if (input.host && input.slackChannel) {
+    await db.insert(nephthys_host).values({
+      instanceId,
+      host: input.host,
+      slackChannel: input.slackChannel,
+    });
+  }
 
   revalidate();
 }
