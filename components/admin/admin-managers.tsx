@@ -64,7 +64,7 @@ import {
 
 type UserRow = Awaited<ReturnType<typeof listAllUsers>>[number];
 
-const ORG_ROLES = ["helper", "jellyHelper", "admin", "sponsor"];
+const ORG_ROLES = ["helper", "admin", "sponsor"];
 const GLOBAL_ROLES = ["user", "admin"];
 
 async function run(fn: () => Promise<unknown>) {
@@ -498,7 +498,7 @@ function ManageOrgsDialog({
                     addOrgMember(
                       orgId,
                       user.id,
-                      role as "helper" | "jellyHelper" | "admin" | "sponsor",
+                      role as "helper" | "admin" | "sponsor",
                     ),
                   )
                 }
