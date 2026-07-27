@@ -72,20 +72,6 @@ export function SlackMessageLink(channelId: string, messageTs: string) {
   return `${SlackChannelLink(channelId)}&thread_ts=${messageTs}`;
 }
 
-const KnownErrors: { [key: string]: string } = {
-  "Invalid tickets data":
-    "We were unable to fetch the data from the nephthys instance, please make sure that the host is working normally.",
-  "Couldn't find organization by slug":
-    "We were unable to find the organization by the slug, please make sure that the slug in the URL is correct and that the organization exists.",
-};
-
-export function GetErrorDescription(error: Error) {
-  if (KnownErrors[error.message]) {
-    return KnownErrors[error.message];
-  }
-  return error.message;
-}
-
 export function userIsSuperAdmin(role: string | null | undefined): boolean {
   return role === "admin";
 }

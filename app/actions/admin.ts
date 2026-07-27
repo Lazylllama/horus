@@ -14,6 +14,8 @@ import type { OrgRole } from "@/lib/auth-permissions";
 import { userIsSuperAdmin } from "@/lib/utils";
 import { searchGlobalUsers } from "./shared";
 
+//! This file is exempt of ErrorResponse cause i dont want to dread myself with all the extra error handling
+
 /**
  * All admin actions require a global "admin" role
  * see lib/utils.ts:userIsSuperAdmin :)

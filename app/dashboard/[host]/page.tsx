@@ -80,20 +80,21 @@ async function TicketsSection({
   params: Promise<{ host: string }>;
 }) {
   const { host: selectedHost } = await params;
-  const { host: hostname, slackChannel } =
-    await GetNephthysHostnameFromSlug(selectedHost);
-  if (!hostname)
-    throw new Error("Nephthys hostname not found for the selected host");
+  const nephthysHost = await GetNephthysHostnameFromSlug(selectedHost);
+  if ("error" in nephthysHost || !nephthysHost)
+    throw new Error(
+      nephthysHost.message ||
+        "Nephthys hostname not found for the selected host",
+    );
+
+  const { host: hostname, slackChannel } = nephthysHost;
 
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
-  const tickets = await fetchNephthysTickets({
-    nephthysHost: hostname,
-    filter: {
-      status: "OPEN,IN_PROGRESS",
-    },
+  const tickets = await fetchNephthysTickets(hostname, {
+    status: "OPEN,IN_PROGRESS",
   });
 
   if ("error" in tickets) throw new Error(tickets.error);
@@ -173,21 +174,21 @@ function TicketsSectionFallback() {
 
 async function StatsSection({ params }: { params: Promise<{ host: string }> }) {
   const { host: selectedHost } = await params;
-  const { host: hostname } = await GetNephthysHostnameFromSlug(selectedHost);
-  if (!hostname)
-    throw new Error("Nephthys hostname not found for the selected host");
+  const nepthysData = await GetNephthysHostnameFromSlug(selectedHost);
+  if ("error" in nepthysData)
+    throw new Error(
+      nepthysData.error || "Nephthys hostname not found for the selected host",
+      { cause: nepthysData.message },
+    );
 
   const [ticketsTTR, stats] = await Promise.all([
-    fetchNephthysTicketsTTR({
-      nephthysHost: hostname,
-    }),
-    fetchNephthysStats({
-      nephthysHost: hostname,
-    }),
+    fetchNephthysTicketsTTR(nepthysData.host),
+    fetchNephthysStats(nepthysData.host),
   ]);
 
-  if ("error" in ticketsTTR) throw new Error(ticketsTTR.error);
-  if ("error" in stats) throw new Error(stats.error);
+  if ("error" in ticketsTTR)
+    throw new Error(ticketsTTR.error, { cause: ticketsTTR.message });
+  if ("error" in stats) throw new Error(stats.error, { cause: stats.message });
 
   return (
     <>

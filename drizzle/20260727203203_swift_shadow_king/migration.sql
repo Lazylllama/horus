@@ -1,0 +1,1 @@
+ALTER TABLE "marmalade_key" DROP COLUMN "mailbox_id";

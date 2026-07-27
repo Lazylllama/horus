@@ -4,7 +4,6 @@ import { unstable_catchError as catchError, type ErrorInfo } from "next/error";
 import { PageWrapper } from "@/components/page-template";
 import { PageDescription, PageHeader } from "@/components/text-types";
 import { Button } from "@/components/ui/button";
-import { GetErrorDescription } from "@/lib/utils";
 
 function ErrorFallback(
   _props: { title: string },
@@ -20,8 +19,7 @@ function ErrorFallback(
     <PageWrapper variant="tight">
       <PageHeader title={error.message} breadcrumb={"ERROR"}>
         <PageDescription>
-          {GetErrorDescription(error)} This error was automatically logged, if
-          this is a major disruption, please reach out using the button below.
+          {error.name}: {error.message}
           <br />
           <br />
           Stack: {error.stack}

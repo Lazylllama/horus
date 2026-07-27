@@ -9,7 +9,12 @@ import {
   user_preferences,
   verification,
 } from "./auth-schema";
-import { instance, jelly_host, nephthys_host } from "./instance-schema";
+import {
+  instance,
+  marmalade_data,
+  marmalade_key,
+  nephthys_host,
+} from "./instance-schema";
 
 export const relations = defineRelations(
   {
@@ -23,7 +28,8 @@ export const relations = defineRelations(
     verification,
     instance,
     nephthys_host,
-    jelly_host,
+    marmalade_data,
+    marmalade_key,
   },
   (r) => ({
     // auth-schema.ts
@@ -76,16 +82,24 @@ export const relations = defineRelations(
         from: r.instance.id,
         to: r.nephthys_host.instanceId,
       }),
-      jelly_host: r.one.jelly_host({
+      marmalade_data: r.one.marmalade_data({
         from: r.instance.id,
-        to: r.jelly_host.instanceId,
+        to: r.marmalade_data.instanceId,
+      }),
+      marmalade_key: r.one.marmalade_key({
+        from: r.instance.id,
+        to: r.marmalade_key.instanceId,
       }),
     },
     nephthys_host: {
       instance: r.one.instance(),
     },
-    jelly_host: {
+    marmalade_data: {
       instance: r.one.instance(),
+    },
+    marmalade_key: {
+      instance: r.one.instance(),
+      user: r.one.user({ from: r.marmalade_key.userId, to: r.user.id }),
     },
   }),
 );

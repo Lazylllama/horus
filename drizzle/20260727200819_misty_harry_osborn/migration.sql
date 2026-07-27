@@ -1,0 +1,2 @@
+ALTER TABLE "marmalade_key" ADD COLUMN "user_id" text NOT NULL;--> statement-breakpoint
+ALTER TABLE "marmalade_key" ADD CONSTRAINT "marmalade_key_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;

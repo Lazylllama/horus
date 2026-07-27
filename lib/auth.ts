@@ -12,7 +12,6 @@ import {
   ac,
   admin as adminRole,
   helper as helperRole,
-  jellyHelper as jellyHelperRole,
   sponsor,
 } from "./auth-permissions";
 import { redisSecondaryStorage } from "./auth-redis";
@@ -65,7 +64,6 @@ export const auth = betterAuth({
       ac,
       roles: {
         helper: helperRole,
-        jellyHelper: jellyHelperRole,
         admin: adminRole,
         sponsor,
       },

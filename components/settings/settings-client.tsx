@@ -11,7 +11,7 @@ import {
   transferInstance,
   updateIdentity,
   updateInstanceMemberRole,
-  updateJellyKey,
+  updateJellyMailbox,
   updateNephthys,
 } from "@/app/actions/settings";
 import ErrorFallback from "@/app/error-boundary";
@@ -67,8 +67,8 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
-const ORG_ROLES = ["helper", "jellyHelper", "admin", "sponsor"] as const;
-const PROMOTABLE_ROLES = ["helper", "jellyHelper", "admin"] as const;
+const ORG_ROLES = ["helper", "admin", "sponsor"] as const;
+const PROMOTABLE_ROLES = ["helper", "admin"] as const;
 type OrgRole = (typeof ORG_ROLES)[number];
 
 type SettingsSection = "Identity" | "Members" | "Nephthys" | "Jelly" | "Danger";
@@ -91,7 +91,7 @@ const SectionMeta: Record<
     destructive: false,
   },
   Jelly: {
-    description: "Configure your Jelly team and manage your configuration.",
+    description: "Configure your Jelly mailbox through marmalade.",
     destructive: false,
   },
   Danger: {
@@ -217,8 +217,8 @@ function SettingsInner({ data }: { data: NonNullable<SettingsData> }) {
                 )}
                 {perms.sensitiveRead && (
                   <Section name="Jelly">
-                    <JellyForm
-                      hasKey={data.jelly.hasKey}
+                    <MarmaladeForm
+                      marmalade={data.marmalade}
                       canWrite={perms.nephthysWrite}
                       onSaved={refresh}
                     />
@@ -620,14 +620,14 @@ function NephthysForm({
   );
 }
 
-// ==================== Jelly ====================
+// ==================== Marmalade ====================
 
-function JellyForm({
-  hasKey,
+function MarmaladeForm({
+  marmalade,
   canWrite,
   onSaved,
 }: {
-  hasKey: boolean;
+  marmalade: NonNullable<SettingsData>["marmalade"];
   canWrite: boolean;
   onSaved: () => void;
 }) {
@@ -637,10 +637,10 @@ function JellyForm({
       onSubmit={(e) => {
         e.preventDefault();
         const form = e.currentTarget;
-        const key = String(new FormData(form).get("key"));
-        if (!key) return;
+        const mailboxId = String(new FormData(form).get("mailbox-id"));
+        if (!mailboxId) return;
         run(
-          () => updateJellyKey(key),
+          () => updateJellyMailbox(mailboxId),
           () => {
             form.reset();
             onSaved();
@@ -648,25 +648,33 @@ function JellyForm({
         );
       }}
     >
-      <SettingLabel htmlFor="jelly-api-key" label="Jelly API Key" />
+      <SettingLabel
+        htmlFor="marmalade-mailbox-id"
+        label="Marmalade Mailbox ID"
+      />
       <Input
-        id="jelly-api-key"
-        name="key"
-        type="password"
+        id="marmalade-mailbox-id"
+        name="mailbox-id"
+        defaultValue={marmalade.mailboxId}
         placeholder={
-          hasKey
-            ? "•••••••• (set — enter a new key to replace)"
-            : "Enter jelly api key"
+          marmalade.mailboxId.length > 1
+            ? marmalade.mailboxId
+            : "Enter marmalade mailbox ID"
         }
         disabled={!canWrite}
       />
       <p className="text-xs mt-1 text-muted-foreground tracking-wide">
-        You can fetch your key on the{" "}
-        <LinkHref href="https://app.letsjelly.com/">Jelly Dashboard</LinkHref>
+        You can fetch your mailbox ID on the{" "}
+        <LinkHref href="https://marmalade.hackclub.dev/mailboxes">
+          Marmalade Dashboard
+        </LinkHref>
       </p>
       {canWrite && (
-        <div className="mt-2">
-          <Button type="submit">Save key</Button>
+        <div className="mt-2 gap-2 flex flex-row">
+          <Button type="submit">Save mailbox ID</Button>
+          <Button type="button" variant="outline" onClick={() => {}}>
+            Get my mailboxes
+          </Button>
         </div>
       )}
     </form>

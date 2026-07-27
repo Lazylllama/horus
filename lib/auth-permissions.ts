@@ -10,7 +10,6 @@ const statement = {
     "members:read",
     "members:write",
   ],
-  jelly: ["read"],
 };
 
 const ac = createAccessControl(statement);
@@ -19,14 +18,8 @@ const helper = ac.newRole({
   instance: ["general:read", "members:read"],
 });
 
-const jellyHelper = ac.newRole({
-  instance: ["general:read", "members:read"],
-  jelly: ["read"],
-});
-
 const admin = ac.newRole({
   instance: ["general:read", "general:write", "members:read", "members:write"],
-  jelly: ["read"],
 });
 
 const sponsor = ac.newRole({
@@ -39,16 +32,14 @@ const sponsor = ac.newRole({
     "members:read",
     "members:write",
   ],
-  jelly: ["read"],
 });
 
-const ROLES = { helper, jellyHelper, admin, sponsor } as const;
+const ROLES = { helper, admin, sponsor } as const;
 export type OrgRole = keyof typeof ROLES;
 
 type InstanceAction = (typeof statement.instance)[number];
 export type PermissionRequest = {
   instance?: InstanceAction[];
-  jelly?: (typeof statement.jelly)[number][];
 };
 
 // Same check better-auth's hasPermission runs internally, but in-process.
@@ -64,4 +55,4 @@ export function authorizeInstanceRole(
   });
 }
 
-export { ac, helper, jellyHelper, admin, sponsor };
+export { ac, helper, admin, sponsor };

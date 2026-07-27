@@ -5,11 +5,12 @@ import { db } from "@/db";
 import { auth } from "@/lib/auth";
 import { redis } from "@/lib/redis";
 import { userIsSuperAdmin } from "@/lib/utils";
+import type { ErrorResponse } from "@/types/error";
 import type { InstanceApiData, RedisInstanceStats } from "@/types/instances";
 
 export async function GetInstances(
   includePrivateInstances: boolean = false,
-): Promise<InstanceApiData[] | { error: string }> {
+): Promise<InstanceApiData[] | ErrorResponse> {
   // Only allow super admin to view private instances
   if (includePrivateInstances) {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -31,15 +32,29 @@ export async function GetInstances(
     redisStats = redisStatsString as RedisInstanceStats;
   }
 
-  return data.map((instance) => {
-    if (
-      !instance.organizationId ||
-      !instance.name ||
-      !instance.organization?.slug
-    ) {
-      throw new Error("Instance data is incomplete", {
-        cause: instance.id,
-      });
+  const transformedData = data.map((instance) => {
+    // "temporary"
+    if (!instance.organization) {
+      console.warn(
+        `Instance ${instance.id} is missing organization data, skipping...`,
+      );
+      return null;
+    }
+    if (!instance.organization.slug) {
+      console.warn(
+        `Instance ${instance.id} is missing organization slug, skipping...`,
+      );
+      return null;
+    }
+    if (!instance.name) {
+      console.warn(`Instance ${instance.id} is missing name, skipping...`);
+      return null;
+    }
+    if (!instance.organizationId) {
+      console.warn(
+        `Instance ${instance.id} is missing organizationId, skipping...`,
+      );
+      return null;
     }
 
     return {
@@ -56,9 +71,12 @@ export async function GetInstances(
       deprecated: instance.deprecated || false,
     };
   });
+  return transformedData.filter((v): v is NonNullable<typeof v> => !!v);
 }
 
-export async function GetNephthysHostnameFromSlug(slug: string) {
+export async function GetNephthysHostnameFromSlug(
+  slug: string,
+): Promise<{ host: string; slackChannel: string } | ErrorResponse> {
   const org = await db.query.organization.findFirst({
     where: { slug: slug.toLocaleLowerCase() },
     with: {
@@ -71,9 +89,10 @@ export async function GetNephthysHostnameFromSlug(slug: string) {
   });
 
   if (!org || !org.instance || !org.instance.nephthys_host) {
-    throw new Error("Couldn't find organization by slug", {
-      cause: org?.id || slug,
-    });
+    return {
+      error: "SlugNotFound",
+      message: `Couldn't find organization, nephthys hostname or instance (${org?.id || slug}) by slug`,
+    };
   }
 
   return {

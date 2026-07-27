@@ -5,14 +5,13 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { db } from "@/db";
 import { member, organization } from "@/db/schemas/auth-schema";
-import { jelly_host, nephthys_host } from "@/db/schemas/instance-schema";
+import { marmalade_data, nephthys_host } from "@/db/schemas/instance-schema";
 import { auth } from "@/lib/auth";
 import {
   authorizeInstanceRole,
   type OrgRole,
   type PermissionRequest,
 } from "@/lib/auth-permissions";
-import { encrypt } from "@/lib/encryption";
 import { searchGlobalUsers } from "./shared";
 
 // customSession's inferred type drops the org plugin's session field, but the
@@ -65,7 +64,7 @@ export async function getSettingsData() {
   const org = await db.query.organization.findFirst({
     where: { id: organizationId },
     with: {
-      instance: { with: { nephthys_host: true, jelly_host: true } },
+      instance: { with: { nephthys_host: true, marmalade_data: true } },
       members: { with: { user: true } },
     },
   });
@@ -102,9 +101,8 @@ export async function getSettingsData() {
       host: org.instance.nephthys_host?.host ?? "",
       slackChannel: org.instance.nephthys_host?.slackChannel ?? "",
     },
-    jelly: {
-      // Never ship the key to the client — only whether one is set.
-      hasKey: !!org.instance.jelly_host?.jellyApiKey,
+    marmalade: {
+      mailboxId: org.instance.marmalade_data?.mailboxId ?? "",
     },
     members: org.members.map((m) => ({
       memberId: m.id,
@@ -152,14 +150,14 @@ export async function updateIdentity(input: {
   revalidate();
 }
 
-// ==================== nephthys host (sensitive:write) ====================
+// ==================== nephthys host (general:write) ====================
 
 export async function updateNephthys(input: {
   host: string;
   slackChannel: string;
 }) {
   const { organizationId } = await requireInstance({
-    instance: ["sensitive:write"],
+    instance: ["general:write"],
   });
   const instanceId = await instanceIdFor(organizationId);
 
@@ -170,23 +168,20 @@ export async function updateNephthys(input: {
   revalidate();
 }
 
-// ==================== jelly key (sensitive:write) ====================
+// ==================== marmalade/jelly mailbox (general:write) ====================
 
-export async function updateJellyKey(apiKey: string) {
+export async function updateJellyMailbox(mailboxId: string) {
   const { organizationId } = await requireInstance({
-    instance: ["sensitive:write"],
+    instance: ["general:write"],
   });
   const instanceId = await instanceIdFor(organizationId);
 
-  const encrypted = encrypt(apiKey);
-  if (!encrypted) throw new Error("Encryption is not configured");
-
   await db
-    .insert(jelly_host)
-    .values({ instanceId, jellyApiKey: encrypted })
+    .insert(marmalade_data)
+    .values({ instanceId, mailboxId })
     .onConflictDoUpdate({
-      target: jelly_host.instanceId,
-      set: { jellyApiKey: encrypted },
+      target: marmalade_data.instanceId,
+      set: { mailboxId },
     });
   revalidate();
 }

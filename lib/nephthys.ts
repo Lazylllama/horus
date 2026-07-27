@@ -26,7 +26,7 @@ export async function fetchNephthys<T>(
 ): Promise<T> {
   const response = await fetch(`https://${host}${path}`, {
     headers: { accept: "application/json" },
-    next: { revalidate: options.revalidate ?? 30 },
+    next: { revalidate: options.revalidate ?? 10 },
   });
 
   if (!response.ok) {
