@@ -56,7 +56,7 @@ async function AdminContent() {
 }
 
 async function InstancesSection() {
-  const instances = await GetInstances(true);
+  const instances = await GetInstances({ includePrivateInstances: true });
   if ("error" in instances) throw new Error(instances.error);
   return <InstancesManager instances={instances} />;
 }
@@ -64,7 +64,7 @@ async function InstancesSection() {
 async function UsersSection() {
   const [users, instances] = await Promise.all([
     listAllUsers(),
-    GetInstances(true),
+    GetInstances({ includePrivateInstances: true }),
   ]);
   const orgs =
     "error" in instances

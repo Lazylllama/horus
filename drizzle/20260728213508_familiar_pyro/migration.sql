@@ -1,0 +1,1 @@
+ALTER TABLE "marmalade_key" ADD CONSTRAINT "marmalade_key_instance_id_user_id_unique" UNIQUE("instance_id","user_id");

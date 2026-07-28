@@ -1,9 +1,17 @@
 "use client";
 
-import { LockKeyhole, UnlockKeyhole } from "lucide-react";
+import {
+  LockKeyhole,
+  MailWarning,
+  MoveUpRight,
+  SaveIcon,
+  UnlockKeyhole,
+} from "lucide-react";
 import posthog from "posthog-js";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { GetInstances } from "@/app/actions/instance";
+import { setMarmaladeApiKey } from "@/app/actions/marmalade";
 import { updatePreferences } from "@/app/actions/preferences";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "./ui/button";
@@ -15,10 +23,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
+import { Input } from "./ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { toast } from "./ui/toast";
 
 export function SettingsModal() {
   const { data: _session, isPending } = authClient.useSession();
-  const [isLoading, _setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userInstances, setUserInstances] = useState<selectItem[]>([]);
+  const [selectedInstance, setSelectedInstance] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState<string>("");
 
   async function TogglePosthogCollection() {
     await updatePreferences({
@@ -34,31 +54,63 @@ export function SettingsModal() {
     window.location.reload();
   }
 
-  // type selectItem = {
-  //   label: string;
-  //   value: string;
-  // };
+  type selectItem = {
+    label: string;
+    value: string;
+  };
 
-  // const nephthysHostsSelectItems: selectItem[] = nephthysHosts.map((host) => {
-  //   return {
-  //     label: host.name,
-  //     value: host.host,
-  //   };
-  // });
+  useEffect(() => {
+    async function fetchUserInstances() {
+      if (isPending) return;
+      const instances = await GetInstances({ onlyMemberInstances: true });
 
-  // async function handleDefaultHostChange(value: string | null) {
-  //   if (!value || !GetNephthysNameFromHost(value)) return;
+      if ("error" in instances) {
+        return {
+          error: "InternalError",
+          message: instances.message || "Failed to fetch user instances",
+        };
+      }
 
-  //   setIsLoading(true);
+      setUserInstances(
+        instances.map((instance) => ({
+          label: instance.name,
+          value: instance.instanceId,
+        })),
+      );
+      setSelectedInstance(instances[0]?.instanceId || null);
+    }
 
-  //   await updatePreferences({
-  //     defaultHost: value,
-  //   });
+    fetchUserInstances();
+  }, [isPending]);
 
-  //   router.push(
-  //     `/dashboard/${nephthysHosts.find((host) => host.host === value)?.name}`,
-  //   );
-  // }
+  async function handleSaveApiKey() {
+    if (!selectedInstance) return;
+
+    setIsLoading(true);
+
+    const response = await setMarmaladeApiKey(selectedInstance, apiKey);
+
+    if ("error" in response) {
+      console.error("Failed to save Marmalade API key:", response.error);
+      toast.add({
+        title: "Error",
+        description: `Failed to save Marmalade API key: ${response.error}`,
+        type: "error",
+      });
+    } else {
+      toast.add({
+        title: "Success",
+        description: "Marmalade API key saved successfully",
+        type: "success",
+      });
+    }
+
+    setIsLoading(false);
+  }
+
+  function OpenMarmaladeAPIKeyPage() {
+    window.open("https://marmalade.hackclub.dev/", "_blank");
+  }
 
   return (
     <Dialog>
@@ -92,6 +144,74 @@ export function SettingsModal() {
                 <UnlockKeyhole size={12} />
               )}
             </Button>
+          </SettingContainer>
+          <SettingContainer>
+            <SettingHeader
+              title="Marmalade API Key (Jelly)"
+              description="Marmalade is used to fetch your mailboxes and messages, you need one API key for each instance."
+            />
+            {!isPending && userInstances.length === 0 && (
+              <div className="border border-destructive p-3 my-3 rounded-md flex flex-row gap-3">
+                <div>
+                  <MailWarning size={24} className="text-destructive" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  You are not a member of any instances, please contact an admin
+                  to add you and you can then setup jelly.
+                </p>
+              </div>
+            )}
+            <Select
+              items={userInstances}
+              onValueChange={(value) => {
+                setSelectedInstance(value);
+              }}
+              defaultValue={userInstances[0]?.value}
+            >
+              <SelectTrigger
+                className="w-full"
+                disabled={isLoading || userInstances.length === 0}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {userInstances.map((instance) => (
+                  <SelectItem key={instance.value} value={instance.value}>
+                    {instance.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="flex flex-row gap-2 mt-2">
+              <Input
+                placeholder="Enter API Key"
+                id="apiKey"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                type="password"
+                disabled={isLoading || userInstances.length === 0}
+              />
+              <Button
+                disabled={
+                  isLoading ||
+                  userInstances.length === 0 ||
+                  !apiKey ||
+                  apiKey.length < 1
+                }
+                onClick={handleSaveApiKey}
+              >
+                Save
+                <SaveIcon size={10} />
+              </Button>
+              <Button
+                variant="link"
+                onClick={() => OpenMarmaladeAPIKeyPage()}
+                disabled={isLoading}
+              >
+                Get API Key
+                <MoveUpRight size={10} />
+              </Button>
+            </div>
           </SettingContainer>
           {/* <SettingContainer>
             <SettingHeader

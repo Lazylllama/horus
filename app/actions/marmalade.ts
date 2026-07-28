@@ -1,4 +1,5 @@
 //* hmmmmmm
+"use server";
 
 import { headers } from "next/headers";
 import { db } from "@/db";
@@ -53,15 +54,15 @@ export async function setMarmaladeApiKey(
   await db
     .insert(marmalade_key)
     .values({
+      keyId: crypto.randomUUID(),
       instanceId,
       userId: session.user.id,
       apiKey: encryptedApiKey,
+      version: "v1",
     })
     .onConflictDoUpdate({
-      target: marmalade_key.userId,
-      set: {
-        apiKey: encryptedApiKey,
-      },
+      target: [marmalade_key.userId, marmalade_key.instanceId],
+      set: { apiKey: encryptedApiKey },
     });
 
   return { success: true };

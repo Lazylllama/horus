@@ -86,10 +86,6 @@ export const relations = defineRelations(
         from: r.instance.id,
         to: r.marmalade_data.instanceId,
       }),
-      marmalade_key: r.one.marmalade_key({
-        from: r.instance.id,
-        to: r.marmalade_key.instanceId,
-      }),
     },
     nephthys_host: {
       instance: r.one.instance(),
@@ -98,7 +94,10 @@ export const relations = defineRelations(
       instance: r.one.instance(),
     },
     marmalade_key: {
-      instance: r.one.instance(),
+      instance: r.one.instance({
+        from: r.marmalade_key.instanceId,
+        to: r.instance.id,
+      }),
       user: r.one.user({ from: r.marmalade_key.userId, to: r.user.id }),
     },
   }),

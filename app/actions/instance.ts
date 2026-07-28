@@ -8,14 +8,20 @@ import { userIsSuperAdmin } from "@/lib/utils";
 import type { ErrorResponse } from "@/types/error";
 import type { InstanceApiData, RedisInstanceStats } from "@/types/instances";
 
-export async function GetInstances(
-  includePrivateInstances: boolean = false,
-): Promise<InstanceApiData[] | ErrorResponse> {
+export async function GetInstances(input?: {
+  onlyMemberInstances?: boolean;
+  includePrivateInstances?: boolean;
+}): Promise<InstanceApiData[] | ErrorResponse> {
+  const { onlyMemberInstances = false, includePrivateInstances = false } =
+    input || {};
+
   // Only allow super admin to view private instances
-  if (includePrivateInstances) {
-    const session = await auth.api.getSession({ headers: await headers() });
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (includePrivateInstances || onlyMemberInstances) {
     if (!session) return { error: "Unauthorized" };
-    if (!userIsSuperAdmin(session.user.role)) return { error: "Forbidden" };
+    if (includePrivateInstances && !userIsSuperAdmin(session.user.role))
+      return { error: "Forbidden" };
   }
 
   const data = await db.query.instance.findMany({
@@ -71,6 +77,28 @@ export async function GetInstances(
       deprecated: instance.deprecated || false,
     };
   });
+
+  if (onlyMemberInstances) {
+    const orgs = await auth.api.listOrganizations({
+      // This endpoint requires session cookies.
+      headers: await headers(),
+    });
+    console.log("orgs", orgs);
+
+    if (!orgs || "error" in orgs) {
+      return {
+        error: "InternalError",
+        message: "Failed to fetch user organizations",
+      };
+    }
+
+    const orgIds = orgs.map((org) => org.id);
+    return transformedData.filter(
+      (v): v is NonNullable<typeof v> =>
+        !!v && orgIds.includes(v.organizationId),
+    );
+  }
+
   return transformedData.filter((v): v is NonNullable<typeof v> => !!v);
 }
 
