@@ -135,7 +135,9 @@ export function AssignedTicketsWidget({
   useEffect(() => {
     if (!staffIds.length) return;
     getCachetUsers(staffIds).then(setStaffs);
-  }, [staffIds]);
+    if (!staffs.find((user) => user.userId === slackId))
+      setFilterBy(staffIds[0]);
+  }, [staffIds, slackId, staffs]);
 
   return (
     <Card>
