@@ -6,14 +6,18 @@ import {
 } from "@1771technologies/lytenyte-core";
 import type { CellRendererParams } from "@1771technologies/lytenyte-core/types";
 import { ArrowUpRight, MailWarning } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { getCachetUsers } from "@/app/actions/cachet";
 import { LyteNyte } from "@/components/lytenyte-core";
 import useWindowDimensions from "@/lib/use-window-dimensions";
 import { cn, relativeTime, SlackMessageLink } from "@/lib/utils";
+import type { CachetUser } from "@/types/cachet";
 import type { Ticket } from "@/types/nephthys";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader } from "./ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
 
 type Spec = Grid.GridSpec<Ticket>;
 
@@ -108,17 +112,69 @@ export function AssignedTicketsWidget({
   slackId?: string;
   slackChannel?: string | null;
 }) {
-  const assignedTickets =
-    tickets?.filter((ticket) => ticket.assigned_to?.slack_id === slackId) || [];
+  const [staffs, setStaffs] = useState<CachetUser[]>([]);
+  const [filterBy, setFilterBy] = useState<string>(slackId || "");
+
+  const assignedTickets = useMemo(() => {
+    if (!filterBy) return [];
+    return tickets?.filter(
+      (ticket) => ticket.assigned_to?.slack_id === filterBy,
+    );
+  }, [filterBy, tickets]);
+
+  const staffIds = useMemo(() => {
+    const uniqueIds = new Set<string>();
+    tickets?.forEach((ticket) => {
+      if (ticket.assigned_to?.slack_id) {
+        uniqueIds.add(ticket.assigned_to.slack_id);
+      }
+    });
+    return Array.from(uniqueIds);
+  }, [tickets]);
+
+  useEffect(() => {
+    if (!staffIds.length) return;
+    getCachetUsers(staffIds).then(setStaffs);
+  }, [staffIds]);
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <h1 className="text-lg">Assigned to you</h1>
-          <p className="text-muted-foreground font-sans">Something here</p>
+        <div className="flex flex-row items-center gap-1.5">
+          <h1 className="text-lg">Assigned to </h1>
+          <Select
+            value={filterBy}
+            onValueChange={(value) => setFilterBy(value || slackId || "")}
+          >
+            <SelectTrigger>
+              <Avatar className="size-4">
+                <AvatarImage
+                  src={`https://cachet.hackclub.com/users/${filterBy}/r`}
+                />
+                <AvatarFallback>
+                  {staffs
+                    .find((user) => user.userId === filterBy)
+                    ?.displayName?.charAt(0) || "?"}
+                </AvatarFallback>
+              </Avatar>
+              {staffs.find((user) => user.userId === filterBy)?.displayName}
+            </SelectTrigger>
+            <SelectContent>
+              {staffs.map((user) => (
+                <SelectItem key={user.userId} value={user.userId}>
+                  <Avatar className="size-4">
+                    <AvatarImage src={user.imageUrl} />
+                    <AvatarFallback>
+                      {user.displayName.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>{" "}
+                  {user.displayName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <Badge variant="default">{assignedTickets.length} Tickets</Badge>
+        <Badge variant="default">{assignedTickets?.length || 0} Tickets</Badge>
       </CardHeader>
       <CardContent className="h-125">
         <TicketTable tickets={assignedTickets} slackChannel={slackChannel} />

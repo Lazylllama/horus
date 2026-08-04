@@ -10,6 +10,7 @@ import {
 import posthog from "posthog-js";
 import type React from "react";
 import { useEffect, useState } from "react";
+import { getMarmaladeFlagEnabled } from "@/app/actions/flags";
 import { GetInstances } from "@/app/actions/instance";
 import { setMarmaladeApiKey } from "@/app/actions/marmalade";
 import { updatePreferences } from "@/app/actions/preferences";
@@ -39,6 +40,7 @@ export function SettingsModal() {
   const [userInstances, setUserInstances] = useState<selectItem[]>([]);
   const [selectedInstance, setSelectedInstance] = useState<string | null>(null);
   const [apiKey, setApiKey] = useState<string>("");
+  const [marmFlagEnabled, setMarmFlagEnabled] = useState<boolean>(false);
 
   async function TogglePosthogCollection() {
     await updatePreferences({
@@ -80,7 +82,13 @@ export function SettingsModal() {
       setSelectedInstance(instances[0]?.instanceId || null);
     }
 
+    async function fetchMarmaladeFlag() {
+      const marmalade = (await getMarmaladeFlagEnabled()) as boolean;
+      setMarmFlagEnabled(marmalade);
+    }
+
     fetchUserInstances();
+    fetchMarmaladeFlag();
   }, [isPending]);
 
   async function handleSaveApiKey() {
@@ -145,74 +153,76 @@ export function SettingsModal() {
               )}
             </Button>
           </SettingContainer>
-          <SettingContainer>
-            <SettingHeader
-              title="Marmalade API Key (Jelly)"
-              description="Marmalade is used to fetch your mailboxes and messages, you need one API key for each instance."
-            />
-            {!isPending && userInstances.length === 0 && (
-              <div className="border border-destructive p-3 my-3 rounded-md flex flex-row gap-3">
-                <div>
-                  <MailWarning size={24} className="text-destructive" />
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  You are not a member of any instances, please contact an admin
-                  to add you and you can then setup jelly.
-                </p>
-              </div>
-            )}
-            <Select
-              items={userInstances}
-              onValueChange={(value) => {
-                setSelectedInstance(value);
-              }}
-              defaultValue={userInstances[0]?.value}
-            >
-              <SelectTrigger
-                className="w-full"
-                disabled={isLoading || userInstances.length === 0}
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {userInstances.map((instance) => (
-                  <SelectItem key={instance.value} value={instance.value}>
-                    {instance.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="flex flex-row gap-2 mt-2">
-              <Input
-                placeholder="Enter API Key"
-                id="apiKey"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                type="password"
-                disabled={isLoading || userInstances.length === 0}
+          {marmFlagEnabled && (
+            <SettingContainer>
+              <SettingHeader
+                title="Marmalade API Key (Jelly)"
+                description="Marmalade is used to fetch your mailboxes and messages, you need one API key for each instance."
               />
-              <Button
-                disabled={
-                  isLoading ||
-                  userInstances.length === 0 ||
-                  !apiKey ||
-                  apiKey.length < 1
-                }
-                onClick={handleSaveApiKey}
+              {!isPending && userInstances.length === 0 && (
+                <div className="border border-destructive p-3 my-3 rounded-md flex flex-row gap-3">
+                  <div>
+                    <MailWarning size={24} className="text-destructive" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    You are not a member of any instances, please contact an
+                    admin to add you and you can then setup jelly.
+                  </p>
+                </div>
+              )}
+              <Select
+                items={userInstances}
+                onValueChange={(value) => {
+                  setSelectedInstance(value);
+                }}
+                defaultValue={userInstances[0]?.value}
               >
-                Save
-                <SaveIcon size={10} />
-              </Button>
-              <Button
-                variant="link"
-                onClick={() => OpenMarmaladeAPIKeyPage()}
-                disabled={isLoading}
-              >
-                Get API Key
-                <MoveUpRight size={10} />
-              </Button>
-            </div>
-          </SettingContainer>
+                <SelectTrigger
+                  className="w-full"
+                  disabled={isLoading || userInstances.length === 0}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {userInstances.map((instance) => (
+                    <SelectItem key={instance.value} value={instance.value}>
+                      {instance.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="flex flex-row gap-2 mt-2">
+                <Input
+                  placeholder="Enter API Key"
+                  id="apiKey"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  type="password"
+                  disabled={isLoading || userInstances.length === 0}
+                />
+                <Button
+                  disabled={
+                    isLoading ||
+                    userInstances.length === 0 ||
+                    !apiKey ||
+                    apiKey.length < 1
+                  }
+                  onClick={handleSaveApiKey}
+                >
+                  Save
+                  <SaveIcon size={10} />
+                </Button>
+                <Button
+                  variant="link"
+                  onClick={() => OpenMarmaladeAPIKeyPage()}
+                  disabled={isLoading}
+                >
+                  Get API Key
+                  <MoveUpRight size={10} />
+                </Button>
+              </div>
+            </SettingContainer>
+          )}
           {/* <SettingContainer>
             <SettingHeader
               title="Default host"

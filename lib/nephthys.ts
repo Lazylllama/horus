@@ -44,7 +44,7 @@ export async function getStats(
   }
 
   const rawStats = await fetchNephthys<Stats>("/api/stats_v2", host, {
-    revalidate: 30,
+    revalidate: 10,
   });
 
   const enrichedStats = {
@@ -67,7 +67,11 @@ export async function getStats(
   return enrichedStats as CachetEnrichedStats;
 }
 
-export async function getTickets(host: string, filter?: NephthysTicketFilter) {
+export async function getTickets(
+  host: string,
+  filter?: NephthysTicketFilter,
+  skipCache = false,
+): Promise<Ticket[]> {
   if (!host) {
     throw new Error("Missing required parameter: host");
   }
@@ -97,7 +101,7 @@ export async function getTickets(host: string, filter?: NephthysTicketFilter) {
         const statusParams = new URLSearchParams(params);
         statusParams.set("status", status);
         return fetchNephthys<Ticket[]>(`/api/tickets?${statusParams}`, host, {
-          revalidate: 30,
+          revalidate: skipCache ? 0 : 5,
         });
       }),
     );
@@ -109,7 +113,7 @@ export async function getTickets(host: string, filter?: NephthysTicketFilter) {
     `/api/tickets?${params}`,
     host,
     {
-      revalidate: 30,
+      revalidate: skipCache ? 0 : 5,
     },
   );
 
@@ -129,7 +133,7 @@ export async function getTicketsTTR(host: string) {
     `/api/tickets?${params}`,
     host,
     {
-      revalidate: 30,
+      revalidate: 10,
     },
   );
 

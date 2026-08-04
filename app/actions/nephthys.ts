@@ -32,9 +32,10 @@ export async function fetchNephthysStats(
 export async function fetchNephthysTickets(
   nephthysHost: string,
   filter?: NephthysTicketFilter,
+  skipCache = false,
 ): Promise<ErrorResponse | Ticket[]> {
   try {
-    const tickets = await getTickets(nephthysHost, filter);
+    const tickets = await getTickets(nephthysHost, filter, skipCache);
     return tickets;
   } catch (error) {
     return {
