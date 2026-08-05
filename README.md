@@ -1,12 +1,34 @@
-> [!CAUTION]
-> Under heavy development
-
 <img width="1500" height="500" alt="Horus_Header" src="https://github.com/user-attachments/assets/71665e80-c9e0-494e-8f21-0dbfd001d0cd" />
 
 # Horus Dashboard
 Horus centralizes your [Hack Club](https://hackclub.com) support channels and gives you a **unified view** of your support operations, all with **blazing** speeds.
 
-## Notes
+## Features
+- See tickets you mightve forgotten about
+- Filter tickets by who its assigned to, or by status
+- Open any ticket randombly
+- See a live leaderboard of the staff teams and their ticket counts
+- Get statistics on how long a ticket usually is open
+- See a breakdown on tickets by their status
 
-- [ ] Use router.prefetch for stuff later
-- [x] Use redis as secondary storage because speed.
+## Hidden or upcoming features
+- [x] User and instance management for super admins
+  - [x] Manage instances in the DB rather than in a config file
+  - [x] Assign users organization roles and give them role based access to their instances
+  - [x] Impersonation of users for super admins
+  - [ ] Hide instances to the public
+- [ ] Integrate with Jelly
+  - [ ] Integrate statistics with nephthys
+  - [ ] Filter conversations like with tickets by better
+  - [ ] Teamwork flawlessly
+  - [x] Add marm
+- [ ] nephthys but better?
+
+## Contributing
+- Clone the repo: `git clone https://github.com/lazylllama/horus-dashboard.git`
+- Copy the environment variables file and fill them in: `cp .example.env .env`
+- Install dependencies: `bun i`
+- Run the development server: `bun dev`
+- [http://localhost:3000](http://localhost:3000)
+
+*Please follow conventional commits thank you, any questions please DM me on slack (@Simon K) or send me an email me@lazyllama.xyz!*
