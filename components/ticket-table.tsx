@@ -116,6 +116,7 @@ export function AssignedTicketsWidget({
   const [filterBy, setFilterBy] = useState<string>(slackId || "");
 
   const assignedTickets = useMemo(() => {
+    if (filterBy === "") return tickets || [];
     if (!filterBy) return [];
     return tickets?.filter(
       (ticket) => ticket.assigned_to?.slack_id === filterBy,
@@ -135,9 +136,10 @@ export function AssignedTicketsWidget({
   useEffect(() => {
     if (!staffIds.length) return;
     getCachetUsers(staffIds).then(setStaffs);
-    if (!staffs.find((user) => user.userId === slackId))
+    if (!slackId || !staffIds.includes(slackId)) {
       setFilterBy(staffIds[0]);
-  }, [staffIds, slackId, staffs]);
+    }
+  }, [staffIds, slackId]);
 
   return (
     <Card>
@@ -146,22 +148,26 @@ export function AssignedTicketsWidget({
           <h1 className="text-lg">Assigned to </h1>
           <Select
             value={filterBy}
-            onValueChange={(value) => setFilterBy(value || slackId || "")}
+            onValueChange={(value) => setFilterBy(value || "")}
           >
             <SelectTrigger>
-              <Avatar className="size-4">
-                <AvatarImage
-                  src={`https://cachet.hackclub.com/users/${filterBy}/r`}
-                />
-                <AvatarFallback>
-                  {staffs
-                    .find((user) => user.userId === filterBy)
-                    ?.displayName?.charAt(0) || "?"}
-                </AvatarFallback>
-              </Avatar>
-              {staffs.find((user) => user.userId === filterBy)?.displayName}
+              {filterBy !== "" && (
+                <Avatar className="size-4">
+                  <AvatarImage
+                    src={`https://cachet.hackclub.com/users/${filterBy}/r`}
+                  />
+                  <AvatarFallback>
+                    {staffs
+                      .find((user) => user.userId === filterBy)
+                      ?.displayName?.charAt(0) || "?"}
+                  </AvatarFallback>
+                </Avatar>
+              )}
+              {staffs.find((user) => user.userId === filterBy)?.displayName ||
+                "Anyone"}
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="">Anyone</SelectItem>
               {staffs.map((user) => (
                 <SelectItem key={user.userId} value={user.userId}>
                   <Avatar className="size-4">

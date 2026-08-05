@@ -8,17 +8,18 @@ import type { CachetUser } from "@/types/cachet";
 export async function getCachetUsers(
   ids: (string | undefined)[],
 ): Promise<CachetUser[]> {
-  const users: CachetUser[] = [];
-
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) throw new Error("Unauthorized");
 
-  for (const id of ids) {
-    if (!id) continue;
-    const user = await getCachetUser(id);
-    if (!user) throw new Error(`User with ID ${id} not found`);
-    users.push(user);
-  }
+  const users = await Promise.all(
+    ids
+      .filter((id): id is string => !!id)
+      .map(async (id) => {
+        const user = await getCachetUser(id);
+        if (!user) throw new Error(`User with ID ${id} not found`);
+        return user;
+      }),
+  );
 
   return users;
 }
