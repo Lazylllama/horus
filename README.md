@@ -1,4 +1,5 @@
-<img width="1500" height="500" alt="Horus_Header" src="https://github.com/user-attachments/assets/71665e80-c9e0-494e-8f21-0dbfd001d0cd" />
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/3854f28a-abae-4b1b-8c5b-8d23b1f1fa3a" />
+
 
 # Horus Dashboard
 Horus centralizes your [Hack Club](https://hackclub.com) support channels and gives you a **unified view** of your support operations, all with **blazing** speeds.
