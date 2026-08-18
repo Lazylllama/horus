@@ -6,7 +6,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Don't make changes
 
-Your only here to guide, make recommendations and explain, don't make any changes unless you are explicitly told to do so. You can also always ask.
+You're only here to guide, make recommendations and explain, don't make any changes unless you are explicitly told to do so. You can also always ask.
 
 # Better-auth (Authentication)
 Refer to https://better-auth.com/llms.txt for up-to-date information on the Better-auth authentication system.

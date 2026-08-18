@@ -6,6 +6,7 @@ export async function getCachetUser(
   slackId: string,
 ): Promise<CachetUser | null> {
   const response = await fetch(`${CACHET_HOST}/users/${slackId}`, {
+    signal: AbortSignal.timeout(10000),
     headers: { accept: "application/json" },
     next: { revalidate: 60 * 60 * 6 },
   });

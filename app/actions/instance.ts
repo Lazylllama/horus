@@ -80,10 +80,8 @@ export async function GetInstances(input?: {
 
   if (onlyMemberInstances) {
     const orgs = await auth.api.listOrganizations({
-      // This endpoint requires session cookies.
       headers: await headers(),
     });
-    console.log("orgs", orgs);
 
     if (!orgs || "error" in orgs) {
       return {

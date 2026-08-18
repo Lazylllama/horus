@@ -37,6 +37,9 @@ const sponsor = ac.newRole({
 const ROLES = { helper, admin, sponsor } as const;
 export type OrgRole = keyof typeof ROLES;
 
+export const ORG_ROLES: OrgRole[] = ["helper", "admin", "sponsor"];
+export const GLOBAL_ROLES: string[] = ["user", "admin"];
+
 type InstanceAction = (typeof statement.instance)[number];
 export type PermissionRequest = {
   instance?: InstanceAction[];

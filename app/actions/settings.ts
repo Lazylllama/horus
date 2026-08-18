@@ -9,6 +9,7 @@ import { marmalade_data, nephthys_host } from "@/db/schemas/instance-schema";
 import { auth } from "@/lib/auth";
 import {
   authorizeInstanceRole,
+  ORG_ROLES,
   type OrgRole,
   type PermissionRequest,
 } from "@/lib/auth-permissions";
@@ -196,6 +197,14 @@ export async function searchInstanceCandidates(query: string) {
 }
 
 export async function addInstanceMember(userId: string, role: OrgRole) {
+  if (!ORG_ROLES.includes(role)) {
+    throw new Error(`Invalid role: ${role}`);
+  }
+
+  if (role.includes("sponsor")) {
+    throw new Error("Cannot add a sponsor — transfer ownership instead");
+  }
+
   const { organizationId } = await requireInstance({
     instance: ["members:write"],
   });
@@ -224,11 +233,11 @@ export async function updateInstanceMemberRole(
   });
   const target = await memberInOrg(memberId, organizationId);
 
-  if (role === "sponsor") {
+  if (role.includes("sponsor")) {
     throw new Error("Cannot promote to sponsor — transfer ownership instead");
   }
 
-  if (target.role === "sponsor") {
+  if (target.role.includes("sponsor")) {
     throw new Error("Cannot demote the sponsor — transfer ownership instead");
   }
 
@@ -275,17 +284,16 @@ export async function transferInstance(newSponsorUserId: string) {
   //     .where(eq(member.id, callerMemberId));
   // });
 
-  await db
-    .update(member)
-    .set({ role: "sponsor" })
-    .where(eq(member.id, target.id));
-  await db
-    .update(member)
-    .set({ role: "admin" })
-    .where(eq(member.id, callerMemberId));
+  await db.batch([
+    db.update(member).set({ role: "sponsor" }).where(eq(member.id, target.id)),
+    db
+      .update(member)
+      .set({ role: "admin" })
+      .where(eq(member.id, callerMemberId)),
+  ]);
+
   revalidate();
 }
-
 export async function deleteInstance() {
   const { organizationId } = await requireInstance({
     instance: ["danger:write"],

@@ -35,7 +35,7 @@ import {
 import { toast } from "./ui/toast";
 
 export function SettingsModal() {
-  const { data: _session, isPending } = authClient.useSession();
+  const { data: session, isPending, refetch } = authClient.useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [userInstances, setUserInstances] = useState<selectItem[]>([]);
   const [selectedInstance, setSelectedInstance] = useState<string | null>(null);
@@ -43,6 +43,7 @@ export function SettingsModal() {
   const [marmFlagEnabled, setMarmFlagEnabled] = useState<boolean>(false);
 
   async function TogglePosthogCollection() {
+    setIsLoading(true);
     await updatePreferences({
       isOptedOutTracking: posthog.has_opted_in_capturing(),
     });
@@ -56,6 +57,16 @@ export function SettingsModal() {
     window.location.reload();
   }
 
+  async function ToggleDeeplinking() {
+    setIsLoading(true);
+    await updatePreferences({
+      isSlackDeeplinkingEnabled:
+        !session?.preferences?.isSlackDeeplinkingEnabled,
+    });
+
+    await refetch();
+    setIsLoading(false);
+  }
   type selectItem = {
     label: string;
     value: string;
@@ -153,6 +164,27 @@ export function SettingsModal() {
               )}
             </Button>
           </SettingContainer>
+          <SettingContainer>
+            <SettingHeader
+              title="Slack Deeplinking"
+              description="Enable or disable Slack deeplinking, disable this if you aren't using the Slack app, works on desktop and mobile"
+            />
+            <Button
+              className="gap-2"
+              onClick={() => ToggleDeeplinking()}
+              disabled={isLoading}
+            >
+              {session?.preferences?.isSlackDeeplinkingEnabled
+                ? "Disable Deeplinking"
+                : "Enable Deeplinking"}
+              {session?.preferences?.isSlackDeeplinkingEnabled ? (
+                <LockKeyhole size={12} />
+              ) : (
+                <UnlockKeyhole size={12} />
+              )}
+            </Button>
+          </SettingContainer>
+
           {marmFlagEnabled && (
             <SettingContainer>
               <SettingHeader
@@ -223,28 +255,6 @@ export function SettingsModal() {
               </div>
             </SettingContainer>
           )}
-          {/* <SettingContainer>
-            <SettingHeader
-              title="Default host"
-              description="You are redirected to this host automatically instead of having to select your host every time."
-            />
-            <Select
-              items={nephthysHostsSelectItems}
-              onValueChange={handleDefaultHostChange}
-              defaultValue={session?.preferences?.defaultHost}
-            >
-              <SelectTrigger className="w-full max-w-48" disabled={isLoading}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {nephthysHostsSelectItems.map((host) => (
-                  <SelectItem key={host.value} value={host.value}>
-                    {host.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </SettingContainer> */}
         </div>
       </DialogContent>
     </Dialog>

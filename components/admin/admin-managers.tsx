@@ -21,7 +21,7 @@ import {
   updateOrgMemberRole,
 } from "@/app/actions/admin";
 import { authClient } from "@/lib/auth-client";
-import type { OrgRole } from "@/lib/auth-permissions";
+import { GLOBAL_ROLES, ORG_ROLES, type OrgRole } from "@/lib/auth-permissions";
 import type { InstanceApiData } from "@/types/instances";
 import {
   AlertDialog,
@@ -63,9 +63,6 @@ import {
 } from "../ui/table";
 
 type UserRow = Awaited<ReturnType<typeof listAllUsers>>[number];
-
-const ORG_ROLES = ["helper", "admin", "sponsor"];
-const GLOBAL_ROLES = ["user", "admin"];
 
 async function run(fn: () => Promise<unknown>) {
   try {
@@ -478,7 +475,7 @@ function ManageOrgsDialog({
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={role} onValueChange={(v) => setRole(v as string)}>
+              <Select value={role} onValueChange={(v) => setRole(v as OrgRole)}>
                 <SelectTrigger size="sm">
                   <SelectValue />
                 </SelectTrigger>

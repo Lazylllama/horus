@@ -13,6 +13,10 @@ import type { RedisInstanceStats } from "@/types/instances";
 export async function POST() {
   const headersData = await headers();
 
+  if (!process.env.CRON_SECRET) {
+    return new Response("CRON isnt setup", { status: 500 });
+  }
+
   if (headersData.get("cron-secret") !== `${process.env.CRON_SECRET}`) {
     return new Response("Unauthorized", { status: 401 });
   }

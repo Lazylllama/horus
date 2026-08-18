@@ -10,7 +10,9 @@ import { getMailboxes } from "@/lib/marmalade";
 import type { ErrorResponse } from "@/types/error";
 import type { Mailbox } from "@/types/marmalade";
 
-async function getMarmaladeApiKey(): Promise<ErrorResponse | (string | null)> {
+async function getMarmaladeApiKey(
+  instanceId: string,
+): Promise<ErrorResponse | (string | null)> {
   const encryptionKey = process.env.ENCRYPTION_KEY;
   if (!encryptionKey || typeof encryptionKey !== "string")
     return {
@@ -23,6 +25,7 @@ async function getMarmaladeApiKey(): Promise<ErrorResponse | (string | null)> {
   const keys = await db.query.marmalade_key.findFirst({
     where: {
       userId: session.user.id,
+      instanceId: instanceId,
     },
   });
 
@@ -45,10 +48,8 @@ export async function setMarmaladeApiKey(
   if (!session) throw new Error("Unauthorized");
 
   const encryptedApiKey = encrypt(apiKey);
-  if (!encryptedApiKey) {
-    return {
-      error: "EncryptionFailed",
-    };
+  if (typeof encryptedApiKey === "object" && "error" in encryptedApiKey) {
+    return encryptedApiKey;
   }
 
   await db
@@ -68,10 +69,10 @@ export async function setMarmaladeApiKey(
   return { success: true };
 }
 
-export async function getMarmaladeMailboxes(): Promise<
-  ErrorResponse | Mailbox[]
-> {
-  const apiKey = await getMarmaladeApiKey();
+export async function getMarmaladeMailboxes(
+  instanceId: string,
+): Promise<ErrorResponse | Mailbox[]> {
+  const apiKey = await getMarmaladeApiKey(instanceId);
 
   if (!apiKey)
     return {

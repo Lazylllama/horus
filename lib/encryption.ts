@@ -1,9 +1,16 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
+import type { ErrorResponse } from "@/types/error";
 
 const KEY = Buffer.from(process.env.ENCRYPTION_KEY || "", "hex"); // 32 bytes
 
-export function encrypt(plaintext: string): string | undefined {
-  if (!process.env.ENCRYPTION_KEY) return;
+export function encrypt(plaintext: string): string | ErrorResponse {
+  if (!process.env.ENCRYPTION_KEY) {
+    return {
+      error: "EncryptionKeyMissing",
+      message: "Encryption key is missing",
+    };
+  }
+
   const iv = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", KEY, iv);
   const encrypted = Buffer.concat([
@@ -14,8 +21,13 @@ export function encrypt(plaintext: string): string | undefined {
   return Buffer.concat([iv, tag, encrypted]).toString("base64");
 }
 
-export function decrypt(payload: string): string | undefined {
-  if (!process.env.ENCRYPTION_KEY) return;
+export function decrypt(payload: string): string | ErrorResponse {
+  if (!process.env.ENCRYPTION_KEY) {
+    return {
+      error: "EncryptionKeyMissing",
+      message: "Encryption key is missing",
+    };
+  }
 
   const buf = Buffer.from(payload, "base64");
   const iv = buf.subarray(0, 12);

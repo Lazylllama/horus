@@ -25,6 +25,7 @@ export async function fetchNephthys<T>(
   options: FetchOptions = {},
 ): Promise<T> {
   const response = await fetch(`https://${host}${path}`, {
+    signal: AbortSignal.timeout(10000),
     headers: { accept: "application/json" },
     next: { revalidate: options.revalidate ?? 10 },
   });
@@ -120,6 +121,7 @@ export async function getTickets(
   return results;
 }
 
+// TODO: this really needs its own function in nephthys api
 export async function getTicketsTTR(host: string) {
   if (!host) {
     throw new Error("Missing required parameter: host");
@@ -133,7 +135,7 @@ export async function getTicketsTTR(host: string) {
     `/api/tickets?${params}`,
     host,
     {
-      revalidate: 10,
+      revalidate: 300,
     },
   );
 

@@ -9,7 +9,7 @@ export function SurveyWidget() {
     <Card>
       <CardHeader>
         <h1 className="text-lg">
-          Enjoying what your seeing? <em>(or not)</em>
+          Enjoying what you're seeing? <em>(or not)</em>
         </h1>
       </CardHeader>
       <CardContent className="flex flex-col items-left gap-2">

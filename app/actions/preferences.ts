@@ -8,20 +8,27 @@ import { auth } from "@/lib/auth";
 export async function updatePreferences(input: {
   defaultHost?: string;
   isOptedOutTracking?: boolean;
+  isSlackDeeplinkingEnabled?: boolean;
 }) {
   const h = await headers();
   const session = await auth.api.getSession({ headers: h });
   if (!session) return { error: "Unauthorized" };
 
+  const preferences = {
+    defaultHost: input.defaultHost,
+    isOptedOutTracking: input.isOptedOutTracking,
+    isSlackDeeplinkingEnabled: input.isSlackDeeplinkingEnabled,
+  };
+
   await db
     .insert(user_preferences)
     .values({
+      ...preferences,
       userId: session.user.id,
-      ...input,
     })
     .onConflictDoUpdate({
       target: user_preferences.userId,
-      set: input,
+      set: preferences,
     });
 
   // The default host also picks which instance the Settings page manages:

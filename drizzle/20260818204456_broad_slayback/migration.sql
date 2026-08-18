@@ -1,0 +1,1 @@
+ALTER TABLE "user_preferences" ADD COLUMN "is_slack_deeplinking_enabled" boolean DEFAULT true NOT NULL;
