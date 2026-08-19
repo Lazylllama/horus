@@ -44,6 +44,11 @@ export const auth = betterAuth({
       ...schema,
     },
   }),
+  advanced: {
+    ipAddress: {
+      ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for"],
+    },
+  },
   user: {
     additionalFields,
   },
