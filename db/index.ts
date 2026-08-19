@@ -1,5 +1,5 @@
 import { upstashCache } from "drizzle-orm/cache/upstash";
-import { drizzle } from "drizzle-orm/neon-http";
+import { drizzle } from "drizzle-orm/node-postgres";
 import { relations } from "./schemas/relations";
 
 // TODO: get t3env or something omg

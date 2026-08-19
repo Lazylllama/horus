@@ -271,26 +271,25 @@ export async function transferInstance(newSponsorUserId: string) {
   if (target.id === callerMemberId)
     throw new Error("You already own this instance");
 
-  //? Neon doesnt support tx, if it fails, well ggs
-  // await db.transaction(async (tx) => {
-  //   await tx
-  //     .update(member)
-  //     .set({ role: "sponsor" })
-  //     .where(eq(member.id, target.id));
-  //   // Step the previous sponsor down to admin so ownership actually moves.
-  //   await tx
-  //     .update(member)
-  //     .set({ role: "admin" })
-  //     .where(eq(member.id, callerMemberId));
-  // });
-
-  await db.batch([
-    db.update(member).set({ role: "sponsor" }).where(eq(member.id, target.id)),
-    db
+  await db.transaction(async (tx) => {
+    await tx
+      .update(member)
+      .set({ role: "sponsor" })
+      .where(eq(member.id, target.id));
+    await tx
       .update(member)
       .set({ role: "admin" })
-      .where(eq(member.id, callerMemberId)),
-  ]);
+      .where(eq(member.id, callerMemberId));
+  });
+
+  // No more neon heh
+  // await db.batch([
+  //   db.update(member).set({ role: "sponsor" }).where(eq(member.id, target.id)),
+  //   db
+  //     .update(member)
+  //     .set({ role: "admin" })
+  //     .where(eq(member.id, callerMemberId)),
+  // ]);
 
   revalidate();
 }
