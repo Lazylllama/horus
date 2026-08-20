@@ -15,7 +15,7 @@ import { PageWrapper } from "@/components/page-template";
 import { PosthogPrefsLoader } from "@/components/posthog-prefs-loader";
 import { StatusChartWidget } from "@/components/status-chart-widget";
 import { SurveyWidget } from "@/components/survey-widget";
-import { PageDescriptionAuth } from "@/components/text-types";
+import { PageDescription, PageDescriptionAuth } from "@/components/text-types";
 import { TicketAgeChartWidget } from "@/components/ticket-age-chart-widget";
 import {
   AssignedTicketsWidget,
@@ -40,11 +40,10 @@ export default async function Dashboard({
             <DashboardHeader
               params={params}
               description={
-                <Suspense>
-                  <PageDescriptionAuth
-                    signedOutText="Sign in to see claimed tickets and more!"
-                    userStats={true}
-                  />
+                <Suspense
+                  fallback={<PageDescription>Loading...</PageDescription>}
+                >
+                  <StatsPageDescription params={params} />
                 </Suspense>
               }
             />
@@ -71,6 +70,52 @@ export default async function Dashboard({
       </ErrorFallback>
       <Footer />
     </>
+  );
+}
+
+async function StatsPageDescription({
+  params,
+}: {
+  params: Promise<{ host: string }>;
+}) {
+  const { host: selectedHost } = await params;
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  const nephthysHost = await GetNephthysHostnameFromSlug(selectedHost);
+  if ("error" in nephthysHost || !nephthysHost) {
+    return (
+      <PageDescriptionAuth
+        signedOutText="Sign in to see claimed tickets and more!"
+        signedInText="Unable to load ticket stats."
+      />
+    );
+  }
+
+  const nephthysStats = { assigned: 0, unclaimed: 0, inProgress: 0 };
+
+  const res = await fetchNephthysTickets(nephthysHost.host, {
+    status: "OPEN,IN_PROGRESS",
+  });
+
+  if (!("error" in res)) {
+    res.forEach((element) => {
+      if (
+        element.assigned_to &&
+        element.assigned_to.slack_id === session?.user?.slack_id
+      )
+        nephthysStats.assigned++;
+      else if (!element.assigned_to) nephthysStats.unclaimed++;
+      else if (element.status === "IN_PROGRESS") nephthysStats.inProgress++;
+    });
+  }
+
+  return (
+    <PageDescriptionAuth
+      signedOutText="Sign in to see claimed tickets and more!"
+      signedInText={`${nephthysStats.assigned} assigned to you · ${nephthysStats.unclaimed}  unclaimed in the queue · ${nephthysStats.inProgress} in progress.`}
+    />
   );
 }
 

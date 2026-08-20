@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchNephthysStats } from "@/app/actions/nephthys";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
@@ -18,22 +19,15 @@ function PageTitle({ title }: { title: string }) {
 export function PageDescriptionAuth({
   signedInText,
   signedOutText,
-  userStats,
 }: {
   signedInText?: string;
   signedOutText: string;
-  userStats: boolean;
 }) {
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
 
-  // ${0} assigned to you · ${0}  unclaimed in the queue · ${0} in progress.
   return (
     <p className="text-md text-muted-foreground max-w-xl tracking-wide">
-      {session?.user
-        ? userStats
-          ? `Welcome back :)`
-          : signedInText
-        : signedOutText}
+      {session?.user && !isPending ? signedInText : signedOutText}
     </p>
   );
 }

@@ -1,0 +1,372 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-20T00:00:00.000Z",
+  "title": "Design System: Horus Dashboard",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Signal Emerald",
+        "canonical": "oklch(0.596 0.145 163.225)",
+        "darkValue": "oklch(0.696 0.17 162.48)",
+        "tonalRamp": [
+          "oklch(0.15 0.045 163.2)",
+          "oklch(0.26 0.075 163.2)",
+          "oklch(0.37 0.105 163.2)",
+          "oklch(0.48 0.13 163.2)",
+          "oklch(0.596 0.145 163.2)",
+          "oklch(0.696 0.17 162.5)",
+          "oklch(0.81 0.13 163.2)",
+          "oklch(0.95 0.05 163.2)"
+        ]
+      },
+      "waiting": {
+        "role": "secondary",
+        "displayName": "Waiting Red",
+        "canonical": "oklch(0.577 0.245 27.325)",
+        "darkValue": "oklch(0.704 0.191 22.216)",
+        "tonalRamp": [
+          "oklch(0.15 0.08 27.3)",
+          "oklch(0.26 0.13 27.3)",
+          "oklch(0.37 0.18 27.3)",
+          "oklch(0.48 0.22 27.3)",
+          "oklch(0.577 0.245 27.3)",
+          "oklch(0.704 0.191 22.2)",
+          "oklch(0.82 0.12 27.3)",
+          "oklch(0.95 0.04 27.3)"
+        ]
+      },
+      "caution": {
+        "role": "secondary",
+        "displayName": "Caution Orange",
+        "canonical": "oklch(0.75 0.183 55.934)",
+        "darkValue": "oklch(0.75 0.183 55.934)",
+        "note": "Tailwind's orange-400. The only significant color in the system that is not a project token.",
+        "tonalRamp": [
+          "oklch(0.15 0.06 55.9)",
+          "oklch(0.26 0.09 55.9)",
+          "oklch(0.37 0.12 55.9)",
+          "oklch(0.5 0.15 55.9)",
+          "oklch(0.63 0.175 55.9)",
+          "oklch(0.75 0.183 55.9)",
+          "oklch(0.86 0.13 55.9)",
+          "oklch(0.95 0.05 55.9)"
+        ]
+      },
+      "restricted": {
+        "role": "tertiary",
+        "displayName": "Restricted Amber",
+        "canonical": "oklch(0.6 0.14 56.78)",
+        "darkValue": "oklch(0.6 0.14 56.78)",
+        "note": "Marks privilege, not state. Always arrives as a dashed border, never a fill.",
+        "tonalRamp": [
+          "oklch(0.15 0.05 56.8)",
+          "oklch(0.26 0.08 56.8)",
+          "oklch(0.37 0.1 56.8)",
+          "oklch(0.48 0.12 56.8)",
+          "oklch(0.6 0.14 56.8)",
+          "oklch(0.72 0.15 56.8)",
+          "oklch(0.84 0.11 56.8)",
+          "oklch(0.95 0.045 56.8)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "oklch(0.995 0.006 165)",
+        "darkValue": "oklch(0.155 0.014 165)",
+        "note": "Page ground. Carries hue 165 even at 99.5% lightness.",
+        "tonalRamp": [
+          "oklch(0.155 0.014 165)",
+          "oklch(0.2 0.016 165)",
+          "oklch(0.275 0.011 216.9)",
+          "oklch(0.42 0.014 200)",
+          "oklch(0.56 0.021 213.5)",
+          "oklch(0.723 0.014 214.4)",
+          "oklch(0.925 0.005 214.3)",
+          "oklch(0.995 0.006 165)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "canonical": "oklch(1 0 0)",
+        "darkValue": "oklch(0.2 0.016 165)",
+        "note": "Panel fill. The tonal step from Paper is the elevation; there is no shadow."
+      },
+      "surface-selected": {
+        "role": "neutral",
+        "displayName": "Selected Wash",
+        "canonical": "oklch(0.72 0.14 165 / 0.16)",
+        "darkValue": "oklch(0.72 0.14 165 / 0.16)"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(0.148 0.004 228.8)",
+        "darkValue": "oklch(0.97 0.006 165)",
+        "note": "The one neutral that shifts cool-blue rather than green in light mode."
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Ink Muted",
+        "canonical": "oklch(0.56 0.021 213.5)",
+        "darkValue": "oklch(0.723 0.014 214.4)"
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "oklch(0.925 0.005 214.3)",
+        "darkValue": "oklch(1 0 0 / 10%)",
+        "note": "Becomes translucent white in dark mode so it reads over any surface."
+      },
+      "ring": {
+        "role": "neutral",
+        "displayName": "Focus Ring",
+        "canonical": "oklch(0.723 0.014 214.4)",
+        "darkValue": "oklch(0.56 0.021 213.5)"
+      },
+      "chart-1": {
+        "role": "tertiary",
+        "displayName": "Teal Ladder 1",
+        "canonical": "oklch(0.855 0.138 181.071)",
+        "darkValue": "oklch(0.855 0.138 181.071)",
+        "tonalRamp": [
+          "oklch(0.437 0.078 188.216)",
+          "oklch(0.511 0.096 186.391)",
+          "oklch(0.6 0.118 184.704)",
+          "oklch(0.704 0.14 182.503)",
+          "oklch(0.855 0.138 181.071)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page titles only. One per page. Lora at 700."
+      },
+      "title": {
+        "displayName": "Panel Title",
+        "purpose": "Panel and dialog titles on a bottom-ruled header. Lora at 500, small."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "System default inside every component. 12px, line-height 1.625."
+      },
+      "label": {
+        "displayName": "Eyebrow / Label",
+        "purpose": "The HORUS · [SECTION] breadcrumb and small-caps metadata. Uppercase, 0.1em tracking."
+      },
+      "numeral": {
+        "displayName": "Numeral",
+        "purpose": "Standalone figures — queue counts, ticket age, chart totals. Always paired with a muted caption."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Chart tooltip values with tabular-nums. Loaded and available but almost entirely unclaimed."
+      }
+    },
+    "shadows": [
+      {
+        "name": "none",
+        "value": "none",
+        "purpose": "This system has no box-shadows. Depth is a hairline ring plus a tonal step. Adding one would dominate the interface."
+      },
+      {
+        "name": "panel-ring",
+        "value": "0 0 0 1px color-mix(in oklch, var(--foreground) 10%, transparent)",
+        "purpose": "The universal container edge. Drawn in foreground color at low alpha so it adapts across both themes from one declaration."
+      },
+      {
+        "name": "modal-scrim",
+        "value": "background: rgb(0 0 0 / 0.1); backdrop-filter: blur(4px)",
+        "purpose": "The only true layering event in the system. Carried by the backdrop, never by a shadow on the dialog."
+      }
+    ],
+    "motion": [
+      {
+        "name": "press",
+        "value": "translateY(1px)",
+        "purpose": "Button :active nudge. Suppressed on menu triggers so popovers don't jump."
+      },
+      {
+        "name": "hover-nudge",
+        "value": "transform 300ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "The directory card's chevron slides 4px right on hover. The system's only decorative motion."
+      },
+      {
+        "name": "overlay",
+        "value": "100ms fade + zoom-95",
+        "purpose": "Dialog and popover enter/exit. Deliberately fast."
+      },
+      {
+        "name": "icon-gesture",
+        "value": "Motion (framer) spring, per-icon variants",
+        "purpose": "Sun, moon and cog icons animate on interaction. The entire non-CSS motion vocabulary."
+      }
+    ],
+    "breakpoints": [
+      { "name": "column-drop", "value": "720px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "container", "value": "1152px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one solid-filled surface in the system. Use for the single real action on a screen.",
+      "html": "<button class=\"ds-btn-primary\">VIEW TICKET<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 7h10v10\"/><path d=\"M7 17 17 7\"/></svg></button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; height: 2rem; padding: 0 0.625rem; border: 1px solid transparent; border-radius: 0; background: var(--primary); color: var(--primary-foreground); font-family: var(--font-sans), sans-serif; font-size: 0.75rem; font-weight: 500; white-space: nowrap; cursor: pointer; transition: all 0.15s ease; outline: none; } .ds-btn-primary svg { width: 1rem; height: 1rem; pointer-events: none; flex-shrink: 0; } .ds-btn-primary:hover { background: color-mix(in oklch, var(--primary) 80%, transparent); } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { border-color: var(--ring); box-shadow: 0 0 0 1px color-mix(in oklch, var(--ring) 50%, transparent); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action. Hairline border on the page ground, filling muted on hover.",
+      "html": "<button class=\"ds-btn-outline\">Open random<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 7h10v10\"/><path d=\"M7 17 17 7\"/></svg></button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; height: 2rem; padding: 0 0.625rem; border: 1px solid var(--border); border-radius: 0; background: var(--background); color: var(--foreground); font-family: var(--font-sans), sans-serif; font-size: 0.75rem; font-weight: 500; white-space: nowrap; cursor: pointer; transition: all 0.15s ease; outline: none; } .ds-btn-outline svg { width: 1rem; height: 1rem; pointer-events: none; flex-shrink: 0; } .ds-btn-outline:hover { background: var(--muted); color: var(--foreground); } .ds-btn-outline:active { transform: translateY(1px); } .ds-btn-outline:focus-visible { border-color: var(--ring); box-shadow: 0 0 0 1px color-mix(in oklch, var(--ring) 50%, transparent); }"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The universal container: square, ringed, never shadowed, with a Lora-set ruled header.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-header\"><span class=\"ds-card-title\">Unassigned queue</span></div><div class=\"ds-card-content\">Nothing lifts, nothing rounds. The ring is the edge and the tonal step is the elevation.</div></div>",
+      "css": ".ds-card { --card-spacing: 1rem; display: flex; flex-direction: column; gap: var(--card-spacing); padding-block: var(--card-spacing); border-radius: 0; overflow: hidden; background: var(--card); color: var(--card-foreground); font-family: var(--font-sans), sans-serif; font-size: 0.75rem; line-height: 1.625; box-shadow: 0 0 0 1px color-mix(in oklch, var(--foreground) 10%, transparent); } .ds-card-header { display: grid; gap: 0.25rem; padding-inline: var(--card-spacing); padding-bottom: var(--card-spacing); border-bottom: 1px solid var(--border); } .ds-card-title { font-family: var(--font-heading), Georgia, serif; font-size: 0.875rem; font-weight: 500; } .ds-card-content { padding-inline: var(--card-spacing); color: var(--muted-foreground); }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "badge-waiting",
+      "description": "The Three-State Rule made visible. A 10% tint of the state hue behind text of the same hue, never a solid fill.",
+      "html": "<span class=\"ds-badge ds-badge-waiting\">Waiting</span> <span class=\"ds-badge ds-badge-progress\">In Progress</span> <span class=\"ds-badge ds-badge-resolved\">Closed</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; height: 1.25rem; padding: 0.125rem 0.5rem; border: 1px solid transparent; border-radius: 0; font-family: var(--font-sans), sans-serif; font-size: 0.75rem; font-weight: 500; white-space: nowrap; } .ds-badge-waiting { background: color-mix(in oklch, var(--destructive) 10%, transparent); color: var(--destructive); } .ds-badge-progress { background: color-mix(in oklch, oklch(0.75 0.183 55.934) 10%, transparent); color: oklch(0.75 0.183 55.934); } .ds-badge-resolved { background: color-mix(in oklch, var(--primary) 10%, transparent); color: var(--primary); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Transparent fill, hairline border, square. Focus matches the button treatment exactly.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search users…\" />",
+      "css": ".ds-input { height: 2rem; width: 100%; min-width: 0; padding: 0.25rem 0.625rem; border: 1px solid var(--input); border-radius: 0; background: transparent; color: var(--foreground); font-family: var(--font-sans), sans-serif; font-size: 0.75rem; transition: border-color 0.15s ease, box-shadow 0.15s ease; outline: none; } .ds-input::placeholder { color: var(--muted-foreground); } .ds-input:focus-visible { border-color: var(--ring); box-shadow: 0 0 0 1px color-mix(in oklch, var(--ring) 50%, transparent); } .ds-input:disabled { background: color-mix(in oklch, var(--input) 50%, transparent); opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Page Eyebrow",
+      "kind": "custom",
+      "description": "The system's most recognizable typographic signature. Once per page, directly above the display title.",
+      "html": "<div class=\"ds-pagehead\"><p class=\"ds-eyebrow\">HORUS · DIRECTORY</p><h1 class=\"ds-display\">Hacker help, made simple.</h1></div>",
+      "css": ".ds-pagehead { display: flex; flex-direction: column; gap: 1rem; } .ds-eyebrow { margin: 0; font-family: var(--font-sans), sans-serif; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.1em; color: var(--primary); } .ds-display { margin: 0; font-family: var(--font-heading), Georgia, serif; font-size: 2.25rem; line-height: 2.5rem; font-weight: 700; color: var(--foreground); }"
+    },
+    {
+      "name": "Nav Tab",
+      "kind": "nav",
+      "description": "The bottom border is always present at 3px; only its color changes on selection, so nothing shifts.",
+      "html": "<nav class=\"ds-nav\"><button class=\"ds-navtab\">Home</button><button class=\"ds-navtab ds-navtab-active\">Dashboard</button><button class=\"ds-navtab ds-navtab-restricted\">Admin</button></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: row; align-items: center; background: var(--card); border-bottom: 1px solid var(--border); } .ds-navtab { padding: 0.75rem; border: none; border-bottom: 3px solid transparent; background: none; color: var(--muted-foreground); font-family: var(--font-sans), sans-serif; font-size: 0.75rem; cursor: pointer; transition: color 0.15s ease, border-color 0.15s ease; } .ds-navtab:hover { color: var(--foreground); } .ds-navtab-active { border-bottom-color: var(--primary); border-bottom-style: solid; color: var(--foreground); } .ds-navtab-restricted { border-bottom: 3px dashed var(--restricted); }"
+    },
+    {
+      "name": "Stat Triad",
+      "kind": "custom",
+      "description": "The densest expression of the product's premise: three figure-and-caption pairs in state order, open first.",
+      "html": "<div class=\"ds-stats\"><div class=\"ds-stat\"><p class=\"ds-stat-num ds-stat-open\">42</p><p class=\"ds-stat-cap\">OPEN</p></div><div class=\"ds-stat\"><p class=\"ds-stat-num ds-stat-prog\">7</p><p class=\"ds-stat-cap\">IN PROGRESS</p></div><div class=\"ds-stat\"><p class=\"ds-stat-num ds-stat-done\">318</p><p class=\"ds-stat-cap\">RESOLVED</p></div></div>",
+      "css": ".ds-stats { display: flex; flex-direction: row; gap: 1rem; font-family: var(--font-sans), sans-serif; } .ds-stat { display: flex; flex-direction: column; text-align: left; } .ds-stat-num { margin: 0; font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; } .ds-stat-cap { margin: 0; font-size: 0.75rem; color: var(--muted-foreground); } .ds-stat-open { color: var(--destructive); } .ds-stat-prog { color: oklch(0.75 0.183 55.934); } .ds-stat-done { color: var(--primary); }"
+    },
+    {
+      "name": "Avatar",
+      "kind": "custom",
+      "refersTo": "avatar",
+      "description": "The only curve in the system. A round shape here means a person.",
+      "html": "<div class=\"ds-avatar\"><span class=\"ds-avatar-fallback\">S</span></div>",
+      "css": ".ds-avatar { position: relative; display: flex; width: 2rem; height: 2rem; flex-shrink: 0; border-radius: 9999px; overflow: hidden; user-select: none; } .ds-avatar-fallback { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; border-radius: 9999px; background: var(--muted); color: var(--muted-foreground); font-family: var(--font-sans), sans-serif; font-size: 0.875rem; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Observatory",
+    "overview": "Horus is an instrument, not an application. Its job is to let one watcher take in a whole sky at once and know immediately where to point. The interface is accordingly built out of flat, sharp-cornered panels separated by hairlines — readouts on a bench, not cards floating in space. Nothing lifts, nothing glows, nothing rounds itself off to seem friendlier. Density is a feature: the default component text size is 12px and the default control height is 32px, because a helper mid-shift is scanning, not reading.\n\nThe one romantic gesture is the type. Page titles and panel titles are set in Lora, a serif — an unusual choice for an operations tool, and the thing that keeps this system from reading as a terminal emulator. That tension is the whole personality: a scholar's hand labelling precise instruments. The serif appears only as a label on a panel; the moment you are inside the panel, everything is Space Grotesk and the numbers take over.\n\nColor is almost entirely spoken for. Emerald, orange and red are not a palette here, they are a vocabulary for ticket state, used identically in a badge, a bar chart, a relative timestamp and a count on the directory. Because those three carry meaning everywhere, the surface underneath them stays quiet — and even the quiet is tinted, every neutral in both themes carrying a faint green hue shift so that white is never quite white and black is never quite black.",
+    "keyCharacteristics": [
+      "Zero corner radius on every surface; circular avatars are the only curve in the system",
+      "No box-shadows anywhere — depth is a hairline ring plus a tonal step",
+      "Dense by default: 12px component text, 32px control height, 16px panel padding",
+      "Serif (Lora) for titles only; sans (Space Grotesk) for everything else",
+      "Semantic color triad — emerald / orange / red — reserved for ticket state",
+      "Neutrals are hue-shifted toward green (hue 165) in both light and dark",
+      "Semantic color arrives as a 10% tinted wash behind its own hue as text, not as a solid fill"
+    ],
+    "rules": [
+      {
+        "name": "The Three-State Rule",
+        "body": "Emerald means resolved, orange means in progress, red means waiting or overdue. These three are spoken for across every surface — badge, chart, count, timestamp, bar. Never use any of them decoratively, and never encode a fourth state in a fourth hue without adding it to this vocabulary first.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tinted-Fill Rule",
+        "body": "Semantic color arrives as a 10% wash of itself behind text of the same hue, never as a saturated block. The primary button is the single exception that fills solid — which is precisely what makes it read as the one real action on a screen.",
+        "section": "colors"
+      },
+      {
+        "name": "The Green Ground Rule",
+        "body": "Every neutral in this system carries hue 165. Never introduce a pure-gray or blue-gray neutral; it will read as a foreign element against a surface that is quietly green everywhere else.",
+        "section": "colors"
+      },
+      {
+        "name": "The Serif Label Rule",
+        "body": "Lora appears only where something is being named: page titles and panel titles. It never appears in body copy, never in data, never in a button, never in a table cell.",
+        "section": "typography"
+      },
+      {
+        "name": "The Eyebrow Rule",
+        "body": "Every page opens with HORUS · [SECTION] in uppercase emerald at 0.75rem with 0.1em tracking, directly above the display title. It appears exactly once per page and is the system's most recognizable typographic signature.",
+        "section": "typography"
+      },
+      {
+        "name": "The 72rem Rule",
+        "body": "Every page is a centered 72rem column with 2.5rem gutters. Full-bleed content does not exist in this system; a band that spans the viewport still aligns its contents to the column.",
+        "section": "layout"
+      },
+      {
+        "name": "The Drop-Don't-Squeeze Rule",
+        "body": "At narrow widths, remove columns rather than shrinking them. A table with four legible columns beats a table with six illegible ones.",
+        "section": "layout"
+      },
+      {
+        "name": "The No-Shadow Rule",
+        "body": "Never add a box-shadow to this system. If an element needs to separate from its surroundings, it gets a hairline ring or a tonal step. A shadow anywhere would be the loudest thing on the screen.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Sharp Corner Rule",
+        "body": "Everything is rounded-none. The radius tokens in the theme are inherited scaffolding and are not to be used. The avatar's circle is the only curve, and it means a person.",
+        "section": "shapes"
+      },
+      {
+        "name": "The Dashed Border Rule",
+        "body": "A dashed edge means restricted or elevated privilege, always in Restricted Amber, and never anything else.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do wrap every container in ring-1 ring-foreground/10 rather than a border. It adapts across themes from one declaration.",
+      "Do reserve emerald, orange and red for ticket state, in that meaning, on every surface.",
+      "Do deliver semantic color as a 10% tint with matching text (bg-destructive/10 text-destructive). Only the primary button fills solid.",
+      "Do open every page with the HORUS · [SECTION] eyebrow above a Lora display title.",
+      "Do drive panel spacing from --card-spacing instead of hardcoding padding.",
+      "Do give loading skeletons the exact dimensions of the content they replace — the existing min-h-72 and h-125 floors exist for this reason.",
+      "Do pair every standalone numeral with a 0.75rem uppercase muted caption.",
+      "Do mark privileged surfaces with a dashed Restricted Amber border, never with a fill or a color swap."
+    ],
+    "donts": [
+      "Don't add a box-shadow. This system has none, and one would dominate everything around it.",
+      "Don't add corner radius. Everything is rounded-none; the --radius scale in the theme is inherited scaffolding, not permission. Two existing strays — the instance-card skeleton's rounded-md and the deprecated badge's rounded-bl-md — are drift, not precedent.",
+      "Don't use gradients, glassmorphism, blurred floating orbs, or oversized soft corners. (Confirmed anti-reference: the generic AI-era SaaS look.)",
+      "Don't introduce a pure-gray neutral. Every neutral here carries hue 165.",
+      "Don't set Lora on anything that isn't a page title or a panel title.",
+      "Don't use the class text-md. It is undefined in both Tailwind and this project's theme, so it silently does nothing — yet it appears 13 times across the app. Use text-sm or text-base and correct the strays when you touch them.",
+      "Don't use a dashed border for anything other than restricted privilege.",
+      "Don't compress table columns below 720px — remove them, as the queue table already does.",
+      "Don't treat the teal chart ramp as an accent. It exists so decorative series can never be confused with the state triad."
+    ]
+  }
+}
